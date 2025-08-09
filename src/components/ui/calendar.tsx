@@ -18,10 +18,10 @@ function Calendar({
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
-      className={cn("p-3", className)}
+      className={cn("w-full p-3", className)}
       classNames={{
-        months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
-        month: "space-y-4",
+        months: "w-full",
+        month: "w-full space-y-4",
         caption: "flex justify-center pt-1 relative items-center",
         caption_label: "text-sm font-medium",
         nav: "space-x-1 flex items-center",
@@ -31,15 +31,15 @@ function Calendar({
         ),
         nav_button_previous: "absolute left-1",
         nav_button_next: "absolute right-1",
-        table: "w-full border-collapse space-y-1",
-        head_row: "grid grid-cols-7",
+        table: "w-full border-collapse",
+        head_row: "grid grid-cols-7 gap-1",
         head_cell:
-          "text-muted-foreground rounded-md font-normal text-[0.8rem]",
-        row: "grid grid-cols-7 w-full mt-2",
+          "text-muted-foreground rounded-md font-normal text-[0.8rem] flex items-center justify-center",
+        row: "grid grid-cols-7 gap-1 w-full mt-1",
         cell: "aspect-square text-center text-sm p-0 relative [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
         day: cn(
           buttonVariants({ variant: "ghost" }),
-          "w-full h-full p-0 font-normal aria-selected:opacity-100"
+          "w-full h-full p-0 font-normal aria-selected:opacity-100 flex items-center justify-center"
         ),
         day_selected:
           "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
