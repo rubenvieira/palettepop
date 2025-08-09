@@ -1,72 +1,44 @@
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart"
+import { PaletteColor } from "@/lib/colors";
+import { Area, AreaChart, ResponsiveContainer } from "recharts";
 
-const chartData = [
-  { month: "January", desktop: 186, mobile: 80 },
-  { month: "February", desktop: 305, mobile: 200 },
-  { month: "March", desktop: 237, mobile: 120 },
-  { month: "April", desktop: 73, mobile: 190 },
-  { month: "May", desktop: 209, mobile: 130 },
-  { month: "June", desktop: 214, mobile: 140 },
-]
+const data = [
+  { name: "Page A", uv: 4000 },
+  { name: "Page B", uv: 3000 },
+  { name: "Page C", uv: 2000 },
+  { name: "Page D", uv: 2780 },
+  { name: "Page E", uv: 1890 },
+  { name: "Page F", uv: 2390 },
+  { name: "Page G", uv: 3490 },
+];
 
 interface StatsChartProps {
-  primaryColor: string
-  lightPrimaryColor: string
+  palette: PaletteColor[];
 }
 
-export const StatsChart = ({
-  primaryColor,
-  lightPrimaryColor,
-}: StatsChartProps) => {
-  const chartConfig = {
-    desktop: {
-      label: "Desktop",
-      color: primaryColor,
-    },
-    mobile: {
-      label: "Mobile",
-      color: lightPrimaryColor,
-    },
-  }
+export const StatsChart = ({ palette }: StatsChartProps) => {
+  if (palette.length < 11) return null;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Monthly Stats</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
-          <BarChart accessibilityLayer data={chartData}>
-            <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey="month"
-              tickLine={false}
-              tickMargin={10}
-              axisLine={false}
-              tickFormatter={(value) => value.slice(0, 3)}
-            />
-            <YAxis />
-            <ChartTooltip content={<ChartTooltipContent />} />
-            <Bar
-              dataKey="desktop"
-              fill={chartConfig.desktop.color}
-              radius={4}
-            />
-            <Bar dataKey="mobile" fill={chartConfig.mobile.color} radius={4} />
-          </BarChart>
-        </ChartContainer>
-      </CardContent>
-    </Card>
-  )
-}
+    <ResponsiveContainer width="100%" height={60}>
+      <AreaChart
+        data={data}
+        margin={{ top: 5, right: 0, left: 0, bottom: 0 }}
+      >
+        <defs>
+          <linearGradient id={`colorUv-${palette[5].hex}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor={palette[4].hex} stopOpacity={0.8} />
+            <stop offset="95%" stopColor={palette[4].hex} stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        <Area
+          type="monotone"
+          dataKey="uv"
+          stroke={palette[5].hex}
+          fillOpacity={1}
+          fill={`url(#colorUv-${palette[5].hex})`}
+          strokeWidth={2}
+        />
+      </AreaChart>
+    </ResponsiveContainer>
+  );
+};
