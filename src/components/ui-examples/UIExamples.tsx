@@ -198,11 +198,11 @@ export const UIExamples = ({ palette }: UIExamplesProps) => {
         {/* Column 3 */}
         <div className="space-y-6">
           <Card>
-            <CardContent className="p-2 sm:p-4 flex justify-center">
+            <CardContent className="p-0">
               <Calendar
                 mode="single"
                 selected={new Date()}
-                className="rounded-md"
+                className="w-full rounded-md"
               />
             </CardContent>
           </Card>
