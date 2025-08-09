@@ -66,7 +66,7 @@ export const UIExamples = ({ palette }: UIExamplesProps) => {
             </CardHeader>
             <CardContent>
               <ul className="space-y-4">
-                <li className="flex items-center">
+                <li className="flex items-center p-2 rounded-lg transition-colors hover:bg-accent cursor-pointer">
                   <div
                     className="p-3 rounded-full"
                     style={{ backgroundColor: p[1].hex }}
@@ -81,7 +81,7 @@ export const UIExamples = ({ palette }: UIExamplesProps) => {
                   </div>
                   <ChevronRight className="ml-auto text-muted-foreground" />
                 </li>
-                <li className="flex items-center">
+                <li className="flex items-center p-2 rounded-lg transition-colors hover:bg-accent cursor-pointer">
                   <div
                     className="p-3 rounded-full"
                     style={{ backgroundColor: p[1].hex }}
@@ -96,7 +96,7 @@ export const UIExamples = ({ palette }: UIExamplesProps) => {
                   </div>
                   <ChevronRight className="ml-auto text-muted-foreground" />
                 </li>
-                <li className="flex items-center">
+                <li className="flex items-center p-2 rounded-lg transition-colors hover:bg-accent cursor-pointer">
                   <div
                     className="p-3 rounded-full"
                     style={{ backgroundColor: p[1].hex }}
