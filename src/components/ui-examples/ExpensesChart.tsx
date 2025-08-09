@@ -1,62 +1,94 @@
+import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
 import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
-import { PaletteColor } from "@/lib/colors";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart"
 
-const data = [
-  { name: "Jan", total: 3200 },
-  { name: "Feb", total: 2800 },
-  { name: "Mar", total: 1900 },
-  { name: "Apr", total: 4200 },
-  { name: "May", total: 4800 },
-  { name: "Jun", total: 3100 },
-];
+const chartData = [
+  { date: "2024-07-15", running: 45, "new-users": 30 },
+  { date: "2024-07-16", running: 52, "new-users": 40 },
+  { date: "2024-07-17", running: 65, "new-users": 50 },
+  { date: "2024-07-18", running: 73, "new-users": 60 },
+  { date: "2024-07-19", running: 81, "new-users": 70 },
+  { date: "2024-07-20", running: 75, "new-users": 65 },
+  { date: "2024-07-21", running: 90, "new-users": 80 },
+]
 
 interface ExpensesChartProps {
-  palette: PaletteColor[];
+  primaryColor: string
+  lightPrimaryColor: string
 }
 
-export function ExpensesChart({ palette }: ExpensesChartProps) {
-  const primaryColor = palette[5].hex;
-  const mutedColor = palette[3].hex;
+export const ExpensesChart = ({
+  primaryColor,
+  lightPrimaryColor,
+}: ExpensesChartProps) => {
+  const chartConfig = {
+    "new-users": {
+      label: "New Users",
+      color: primaryColor,
+    },
+    running: {
+      label: "Running",
+      color: lightPrimaryColor,
+    },
+  }
 
   return (
-    <div style={{ width: "100%", height: 250 }}>
-      <ResponsiveContainer>
-        <BarChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={mutedColor} />
-          <XAxis
-            dataKey="name"
-            stroke={mutedColor}
-            fontSize={12}
-            tickLine={false}
-            axisLine={false}
-          />
-          <YAxis
-            stroke={mutedColor}
-            fontSize={12}
-            tickLine={false}
-            axisLine={false}
-            tickFormatter={(value) => `$${value / 1000}k`}
-          />
-          <Tooltip
-            cursor={{ fill: palette[1].hex }}
-            contentStyle={{
-              backgroundColor: palette[0].hex,
-              borderColor: palette[2].hex,
-              color: palette[9].hex,
-              borderRadius: "0.5rem",
+    <Card>
+      <CardHeader>
+        <CardTitle>Weekly Activity</CardTitle>
+        <CardDescription>New users and running costs</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ChartContainer config={chartConfig}>
+          <BarChart
+            accessibilityLayer
+            data={chartData}
+            margin={{
+              left: 12,
+              right: 12,
             }}
-          />
-          <Bar dataKey="total" fill={primaryColor} radius={[4, 4, 0, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  );
+          >
+            <CartesianGrid vertical={false} />
+            <XAxis
+              dataKey="date"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              tickFormatter={(value) => {
+                const date = new Date(value)
+                return date.toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                })
+              }}
+            />
+            <ChartTooltip
+              cursor={false}
+              content={<ChartTooltipContent indicator="dot" />}
+            />
+            <Bar
+              dataKey="new-users"
+              fill={chartConfig["new-users"].color}
+              radius={4}
+            />
+            <Bar
+              dataKey="running"
+              fill={chartConfig["running"].color}
+              radius={4}
+            />
+          </BarChart>
+        </ChartContainer>
+      </CardContent>
+    </Card>
+  )
 }
