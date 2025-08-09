@@ -15,11 +15,17 @@ import {
   Globe,
   PlusCircle,
   Upload,
+  Users,
+  Bell,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Progress } from "@/components/ui/progress";
+import { Switch } from "@/components/ui/switch";
 import chroma from "chroma-js";
 
 interface UIExamplesProps {
@@ -146,6 +152,37 @@ export const UIExamples = ({ palette }: UIExamplesProps) => {
               </Button>
             </CardContent>
           </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Team Members</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center gap-4">
+                <Avatar>
+                  <AvatarImage src="https://i.pravatar.cc/150?img=1" />
+                  <AvatarFallback>AB</AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="font-semibold">Alice Banks</p>
+                  <p className="text-sm text-muted-foreground">
+                    alice.banks@example.com
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <Avatar>
+                  <AvatarImage src="https://i.pravatar.cc/150?img=2" />
+                  <AvatarFallback>CD</AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="font-semibold">Charlie Davis</p>
+                  <p className="text-sm text-muted-foreground">
+                    charlie.davis@example.com
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Column 2 */}
@@ -194,6 +231,23 @@ export const UIExamples = ({ palette }: UIExamplesProps) => {
                 <Upload className="mr-2 h-4 w-4" /> Create
               </Button>
             </CardFooter>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Project Progress</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex justify-between mb-1">
+                <span className="text-base font-medium">New Feature</span>
+                <span className="text-sm font-medium">75%</span>
+              </div>
+              <Progress value={75} color={p[5].hex} />
+              <div className="flex justify-between mt-4 mb-1">
+                <span className="text-base font-medium">API Integration</span>
+                <span className="text-sm font-medium">40%</span>
+              </div>
+              <Progress value={40} color={p[5].hex} />
+            </CardContent>
           </Card>
         </div>
 
@@ -268,6 +322,28 @@ export const UIExamples = ({ palette }: UIExamplesProps) => {
                 </p>
               </TabsContent>
             </Tabs>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Notifications</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Alert>
+                <Bell className="h-4 w-4" />
+                <AlertTitle>Heads up!</AlertTitle>
+                <AlertDescription>
+                  Your monthly report is ready for review.
+                </AlertDescription>
+              </Alert>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="push-notifications">Push Notifications</Label>
+                <Switch id="push-notifications" />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="email-notifications">Email Notifications</Label>
+                <Switch id="email-notifications" defaultChecked />
+              </div>
+            </CardContent>
           </Card>
         </div>
       </div>
