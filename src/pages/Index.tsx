@@ -10,14 +10,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ColorCard } from "@/components/ColorCard";
-import { ColorPaletteShowcase } from "@/components/palette-widgets/ColorPaletteShowcase";
 import { generatePalette, PaletteColor } from "@/lib/colors";
+import { UIExamples } from "@/components/ui-examples/UIExamples";
 import chroma from "chroma-js";
 import { showSuccess } from "@/utils/toast";
 import { Copy, Shuffle } from "lucide-react";
 
 const Index = () => {
-  const [baseColor, setBaseColor] = useState("#19CE41");
+  const [baseColor, setBaseColor] = useState("#19CE41"); // A green similar to the image
   const [palette, setPalette] = useState<PaletteColor[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -87,17 +87,13 @@ ${palette.map((c) => `          '${c.name}': '${c.hex}'`).join(",\n")}
           </div>
         </header>
 
-        <main className="space-y-8">
+        <main>
           {palette.length > 0 ? (
-            <>
-              <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-11 gap-2 sm:gap-4">
-                {palette.map((color) => (
-                  <ColorCard key={color.name} name={color.name} hex={color.hex} />
-                ))}
-              </div>
-              
-              <ColorPaletteShowcase palette={palette} />
-            </>
+            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-11 gap-2 sm:gap-4">
+              {palette.map((color) => (
+                <ColorCard key={color.name} name={color.name} hex={color.hex} />
+              ))}
+            </div>
           ) : (
             <div className="text-center py-16">
               <p className="text-muted-foreground">
@@ -105,6 +101,8 @@ ${palette.map((c) => `          '${c.name}': '${c.hex}'`).join(",\n")}
               </p>
             </div>
           )}
+
+          {palette.length > 0 && <UIExamples palette={palette} />}
         </main>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
