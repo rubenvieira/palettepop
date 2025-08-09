@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/dialog";
 import { ColorCard } from "@/components/ColorCard";
 import { generatePalette, PaletteColor } from "@/lib/colors";
-import { MadeWithDyad } from "@/components/made-with-dyad";
 import chroma from "chroma-js";
 import { showSuccess } from "@/utils/toast";
 import { Copy } from "lucide-react";
@@ -110,10 +109,6 @@ ${palette.map((c) => `          '${c.name}': '${c.hex}'`).join(",\n")}
           </div>
         )}
       </main>
-      
-      <footer className="text-center py-8">
-        <MadeWithDyad />
-      </footer>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-md">
