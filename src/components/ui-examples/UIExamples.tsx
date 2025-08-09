@@ -13,14 +13,10 @@ import {
   ChevronRight,
   Home,
   ShoppingCart,
-  Globe,
-  PlusCircle,
-  Upload,
   Bell,
   Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -44,8 +40,9 @@ export const UIExamples = ({ palette }: UIExamplesProps) => {
   const [h, s, l] = primaryColor.hsl();
   const primaryVar = `${isNaN(h) ? 0 : h} ${s * 100}% ${l * 100}%`;
 
+  // Use darkest shade from palette for foreground on light primary colors
   const primaryFgColor =
-    chroma.contrast(primaryColor, "white") > 4.5 ? "white" : "black";
+    chroma.contrast(primaryColor, "white") > 4.5 ? "white" : p[10].hex;
   const [hF, sF, lF] = chroma(primaryFgColor).hsl();
   const primaryFgVar = `${isNaN(hF) ? 0 : hF} ${sF * 100}% ${lF * 100}%`;
 
@@ -201,7 +198,7 @@ export const UIExamples = ({ palette }: UIExamplesProps) => {
         {/* Column 3 */}
         <div className="space-y-6">
           <Card>
-            <CardContent className="p-0 flex justify-center">
+            <CardContent className="p-2 sm:p-4 flex justify-center">
               <Calendar
                 mode="single"
                 selected={new Date()}
