@@ -119,6 +119,13 @@ ${palettes
                       : "transparent",
                   }}
                 />
+                <Input
+                  type="color"
+                  value={chroma.valid(color) ? color : '#000000'}
+                  onChange={(e) => handleHarmonyColorChange(e.target.value, index)}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 h-6 w-6 opacity-0 cursor-pointer"
+                  aria-label={`Pick Color for Harmony Color ${index + 1}`}
+                />
               </div>
             ))}
             <Button onClick={handleRandomColor} variant="outline">
