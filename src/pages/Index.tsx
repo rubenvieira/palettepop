@@ -177,7 +177,7 @@ ${palettes
               <DialogDescription>
                 Copy and paste this into your tailwind.config.js file.
               </DialogDescription>
-            </Header>
+            </DialogHeader>
             <div className="mt-2 rounded-md bg-slate-950 p-4 overflow-x-auto">
               <pre>
                 <code className="text-white text-sm">
