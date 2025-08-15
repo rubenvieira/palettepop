@@ -1,261 +1,135 @@
-import React from "react";
 import { PaletteColor } from "@/lib/colors";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Switch } from "@/components/ui/switch";
+import { Progress } from "@/components/ui/progress";
 import { ExpensesChart } from "./ExpensesChart";
 import { StatsChart } from "./StatsChart";
-import {
-  ChevronRight,
-  Home,
-  ShoppingCart,
-  Bell,
-  Check,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Progress } from "@/components/ui/progress";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
-import { Calendar } from "@/components/ui/calendar";
 import chroma from "chroma-js";
+import { Terminal } from "lucide-react";
 
 interface UIExamplesProps {
-  palette: PaletteColor[];
+  palettes: PaletteColor[][];
 }
 
-export const UIExamples = ({ palette }: UIExamplesProps) => {
-  if (palette.length < 11) {
+const getTextColor = (bgHex: string) => {
+  try {
+    return chroma.contrast(bgHex, 'white') >= 4.5 ? 'white' : 'black';
+  } catch (e) {
+    return 'black';
+  }
+};
+
+export const UIExamples = ({ palettes }: UIExamplesProps) => {
+  if (!palettes || palettes.length === 0 || palettes[0].length < 11) {
     return null;
   }
 
-  const p = palette; // shorthand
-  const primaryColor = chroma(p[5].hex);
-  const [h, s, l] = primaryColor.hsl();
-  const primaryVar = `${isNaN(h) ? 0 : h} ${s * 100}% ${l * 100}%`;
+  const cssVars: React.CSSProperties = {};
+  const paletteNames = ["primary", "secondary", "accent"];
+  const finalPalettes: PaletteColor[][] = [
+    palettes[0],
+    palettes[1] || palettes[0],
+    palettes[2] || palettes[1] || palettes[0]
+  ];
 
-  // Use darkest shade from palette for foreground on light primary colors
-  const primaryFgColor =
-    chroma.contrast(primaryColor, "white") > 4.5 ? "white" : p[10].hex;
-  const [hF, sF, lF] = chroma(primaryFgColor).hsl();
-  const primaryFgVar = `${isNaN(hF) ? 0 : hF} ${sF * 100}% ${lF * 100}%`;
-
-  const dynamicStyles = {
-    "--primary": primaryVar,
-    "--primary-foreground": primaryFgVar,
-  } as React.CSSProperties;
+  finalPalettes.forEach((palette, index) => {
+    const name = paletteNames[index];
+    palette.forEach(color => {
+      cssVars[`--${name}-${color.name}`] = color.hex;
+    });
+    const baseColor = palette.find(c => c.name === 500)?.hex;
+    if (baseColor) {
+      cssVars[`--${name}-fg`] = getTextColor(baseColor);
+    }
+    const lightColor = palette.find(c => c.name === 100)?.hex;
+    if (lightColor) {
+      cssVars[`--${name}-light-fg`] = getTextColor(lightColor);
+    }
+  });
 
   return (
-    <div className="mt-12" style={dynamicStyles}>
-      <h2 className="text-3xl font-bold tracking-tight mb-8">UI Examples</h2>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="mt-16" style={cssVars}>
+      <h2 className="text-3xl font-bold mb-8 text-center">UI Examples</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {/* Column 1 */}
-        <div className="space-y-6">
-          <Card
-            className="overflow-hidden"
-            style={{ backgroundColor: p[2].hex }}
-          >
-            <CardContent className="p-6">
-              <div
-                className="h-64 bg-cover bg-center rounded-lg"
-                style={{
-                  backgroundImage: `url('https://images.unsplash.com/photo-1613243555978-51364c4797a2?q=80&w=800&auto=format&fit=crop')`,
-                }}
-              ></div>
-              <h3
-                className="mt-6 text-4xl font-bold"
-                style={{ color: p[9].hex }}
-              >
-                Track your expenses
-              </h3>
+        <div className="space-y-8">
+          <Card>
+            <CardHeader><CardTitle>Buttons</CardTitle></CardHeader>
+            <CardContent className="flex flex-wrap gap-4">
+              <Button className="bg-[var(--primary-500)] text-[var(--primary-fg)] hover:bg-[var(--primary-600)]">Primary</Button>
+              <Button className="bg-[var(--secondary-500)] text-[var(--secondary-fg)] hover:bg-[var(--secondary-600)]">Secondary</Button>
+              <Button variant="outline" className="border-[var(--primary-500)] text-[var(--primary-500)] hover:bg-[var(--primary-50)] hover:text-[var(--primary-600)]">Outline</Button>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader>
-              <CardTitle>Categories</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-4">
-                <li className="flex items-center p-2 rounded-lg transition-colors hover:bg-accent cursor-pointer">
-                  <div
-                    className="p-3 rounded-full"
-                    style={{ backgroundColor: p[1].hex }}
-                  >
-                    <ShoppingCart style={{ color: p[6].hex }} />
-                  </div>
-                  <div className="ml-4">
-                    <p className="font-semibold">Groceries</p>
-                    <p className="text-sm text-muted-foreground">
-                      9 transactions
-                    </p>
-                  </div>
-                  <ChevronRight className="ml-auto text-muted-foreground" />
-                </li>
-                <li className="flex items-center p-2 rounded-lg transition-colors hover:bg-accent cursor-pointer">
-                  <div
-                    className="p-3 rounded-full"
-                    style={{ backgroundColor: p[1].hex }}
-                  >
-                    <Home style={{ color: p[6].hex }} />
-                  </div>
-                  <div className="ml-4">
-                    <p className="font-semibold">Household</p>
-                    <p className="text-sm text-muted-foreground">
-                      12 transactions
-                    </p>
-                  </div>
-                  <ChevronRight className="ml-auto text-muted-foreground" />
-                </li>
-              </ul>
+            <CardHeader><CardTitle>Badges</CardTitle></CardHeader>
+            <CardContent className="flex flex-wrap gap-4">
+              <Badge className="bg-[var(--primary-100)] text-[var(--primary-light-fg)]">Primary</Badge>
+              <Badge className="bg-[var(--secondary-100)] text-[var(--secondary-light-fg)]">Secondary</Badge>
+              <Badge className="bg-[var(--accent-100)] text-[var(--accent-light-fg)]">Accent</Badge>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Badges & Tags</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-wrap gap-2">
-              <Badge>Default</Badge>
-              <Badge variant="secondary">Secondary</Badge>
-              <Badge variant="destructive">Destructive</Badge>
-              <Badge variant="outline">Outline</Badge>
-              <Badge
-                style={{ backgroundColor: p[1].hex, color: p[8].hex }}
-              >
-                Custom Light
-              </Badge>
-              <Badge
-                style={{ backgroundColor: p[8].hex, color: p[1].hex }}
-              >
-                Custom Dark
-              </Badge>
-            </CardContent>
-          </Card>
+          <Alert className="bg-[var(--primary-50)] border-[var(--primary-200)] text-[var(--primary-800)]">
+            <Terminal className="h-4 w-4" stroke="var(--primary-800)" />
+            <AlertTitle>Primary Alert</AlertTitle>
+            <AlertDescription>
+              This is an alert component styled with the primary color.
+            </AlertDescription>
+          </Alert>
         </div>
 
         {/* Column 2 */}
-        <div className="space-y-6">
+        <div className="space-y-8">
           <Card>
-            <CardHeader>
-              <p className="text-muted-foreground">Expenses</p>
-              <p className="text-3xl font-bold">$12,543</p>
-            </CardHeader>
-            <CardContent>
-              <ExpensesChart palette={palette} />
-            </CardContent>
-          </Card>
-          <Card className="border-2 border-primary">
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl">Pro Plan</CardTitle>
-              <p className="text-muted-foreground">For growing teams</p>
-              <p className="text-4xl font-bold mt-2">
-                $49
-                <span className="text-lg font-normal text-muted-foreground">
-                  /mo
-                </span>
-              </p>
-            </CardHeader>
+            <CardHeader><CardTitle>Form Elements</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-              <ul className="space-y-3">
-                <li className="flex items-center">
-                  <Check className="h-5 w-5 text-primary mr-2" /> Unlimited
-                  Projects
-                </li>
-                <li className="flex items-center">
-                  <Check className="h-5 w-5 text-primary mr-2" /> Team
-                  Collaboration
-                </li>
-              </ul>
+              <div className="flex items-center justify-between">
+                <span>Toggle Switch</span>
+                <Switch className="data-[state=checked]:bg-[var(--primary-500)]" />
+              </div>
+              <div className="space-y-2">
+                <span>Progress Bar</span>
+                <Progress value={66} className="[&>div]:bg-[var(--primary-500)]" />
+              </div>
             </CardContent>
-            <CardFooter>
-              <Button className="w-full">Get Started</Button>
-            </CardFooter>
           </Card>
           <Card>
-            <CardHeader>
-              <CardTitle>Project Progress</CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle>Expenses</CardTitle></CardHeader>
             <CardContent>
-              <div className="flex justify-between mb-1">
-                <span className="text-base font-medium">New Feature</span>
-                <span className="text-sm font-medium">75%</span>
-              </div>
-              <Progress value={75} />
-              <div className="flex justify-between mt-4 mb-1">
-                <span className="text-base font-medium">API Integration</span>
-                <span className="text-sm font-medium">40%</span>
-              </div>
-              <Progress value={40} />
+              <ExpensesChart
+                primary={finalPalettes[0][5].hex}
+                secondary={finalPalettes[1][5].hex}
+              />
             </CardContent>
           </Card>
         </div>
 
         {/* Column 3 */}
-        <div className="space-y-6">
+        <div className="space-y-8">
           <Card>
-            <CardContent className="p-0">
-              <Calendar
-                mode="single"
-                selected={new Date()}
-                className="w-full rounded-md"
+            <CardHeader><CardTitle>Statistics</CardTitle></CardHeader>
+            <CardContent className="grid grid-cols-2 gap-4 text-center">
+              <div>
+                <div className="text-2xl font-bold text-[var(--primary-700)]">2,350</div>
+                <div className="text-sm text-muted-foreground">Downloads</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-[var(--secondary-700)]">$58.2k</div>
+                <div className="text-sm text-muted-foreground">Revenue</div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader><CardTitle>Monthly Stats</CardTitle></CardHeader>
+            <CardContent>
+              <StatsChart
+                primary={finalPalettes[0][5].hex}
+                accent={finalPalettes[2][5].hex}
               />
             </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <p className="text-muted-foreground">Income</p>
-              <p className="text-3xl font-bold">$15,989</p>
-            </CardHeader>
-            <CardContent className="pl-0 pr-4 pb-4">
-              <StatsChart palette={palette} />
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Notifications</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Alert>
-                <Bell className="h-4 w-4" />
-                <AlertTitle>Heads up!</AlertTitle>
-                <AlertDescription>
-                  Your monthly report is ready for review.
-                </AlertDescription>
-              </Alert>
-              <div className="flex items-center justify-between">
-                <Label htmlFor="push-notifications">Push Notifications</Label>
-                <Switch id="push-notifications" />
-              </div>
-              <div className="flex items-center justify-between">
-                <Label htmlFor="email-notifications">Email Notifications</Label>
-                <Switch id="email-notifications" defaultChecked />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="settings">Settings</TabsTrigger>
-              </TabsList>
-              <TabsContent value="overview" className="p-4">
-                <h4 className="font-semibold">Overview Tab</h4>
-                <p className="text-sm text-muted-foreground mt-2">
-                  This is the main overview of your account.
-                </p>
-              </TabsContent>
-              <TabsContent value="settings" className="p-4">
-                <h4 className="font-semibold">Settings Tab</h4>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Manage your account settings here.
-                </p>
-              </TabsContent>
-            </Tabs>
           </Card>
         </div>
       </div>

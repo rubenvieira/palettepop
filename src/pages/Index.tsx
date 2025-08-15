@@ -150,7 +150,7 @@ ${palettes
             </div>
           )}
 
-          {palettes.length > 0 && <UIExamples palette={palettes[0]} />}
+          <UIExamples palettes={palettes} />
         </main>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
