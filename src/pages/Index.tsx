@@ -9,21 +9,41 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ColorCard } from "@/components/ColorCard";
-import { generatePalette, PaletteColor } from "@/lib/colors";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Palette } from "@/components/Palette";
+import {
+  generatePalette,
+  generateHarmonies,
+  harmonySchemes,
+  PaletteColor,
+  HarmonyType,
+} from "@/lib/colors";
 import { UIExamples } from "@/components/ui-examples/UIExamples";
 import chroma from "chroma-js";
 import { showSuccess } from "@/utils/toast";
 import { Copy, Shuffle } from "lucide-react";
 
 const Index = () => {
-  const [baseColor, setBaseColor] = useState("#19CE41"); // A green similar to the image
-  const [palette, setPalette] = useState<PaletteColor[]>([]);
+  const [baseColor, setBaseColor] = useState("#19CE41");
+  const [harmony, setHarmony] = useState<HarmonyType>("triadic");
+  const [palettes, setPalettes] = useState<PaletteColor[][]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
-    setPalette(generatePalette(baseColor));
-  }, [baseColor]);
+    if (chroma.valid(baseColor)) {
+      const harmonyColors = generateHarmonies(baseColor, harmony);
+      const newPalettes = harmonyColors.map((color) => generatePalette(color));
+      setPalettes(newPalettes);
+    } else {
+      setPalettes([]);
+    }
+  }, [baseColor, harmony]);
 
   const handleRandomColor = () => {
     const randomColor = chroma.random().hex();
@@ -43,13 +63,20 @@ const Index = () => {
     };
   }, []);
 
+  const paletteNames = ["primary", "secondary", "accent"];
+
   const tailwindConfigString = `module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: {
-${palette.map((c) => `          '${c.name}': '${c.hex}'`).join(",\n")}
-        }
+${palettes
+  .map(
+    (palette, index) =>
+      `        ${paletteNames[index] || `color${index + 1}`}: {\n${palette
+        .map((c) => `          '${c.name}': '${c.hex}'`)
+        .join(",\n")}\n        }`
+  )
+  .join(",\n")}
       }
     }
   }
@@ -59,7 +86,7 @@ ${palette.map((c) => `          '${c.name}': '${c.hex}'`).join(",\n")}
     <div className="bg-gray-50 dark:bg-gray-900 min-h-screen">
       <div className="container mx-auto p-4 sm:p-8">
         <header className="flex flex-col sm:flex-row justify-between items-center gap-4 my-8">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
             <div className="relative">
               <Input
                 type="text"
@@ -81,17 +108,38 @@ ${palette.map((c) => `          '${c.name}': '${c.hex}'`).join(",\n")}
               <Shuffle className="h-4 w-4 mr-2" />
               Random
             </Button>
+            <Select
+              value={harmony}
+              onValueChange={(value) => setHarmony(value as HarmonyType)}
+            >
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Select harmony" />
+              </SelectTrigger>
+              <SelectContent>
+                {harmonySchemes.map((scheme) => (
+                  <SelectItem key={scheme.value} value={scheme.value}>
+                    {scheme.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div>
-            <Button onClick={() => setIsDialogOpen(true)} variant="default">Export</Button>
+            <Button onClick={() => setIsDialogOpen(true)} variant="default">
+              Export
+            </Button>
           </div>
         </header>
 
         <main>
-          {palette.length > 0 ? (
-            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-11 gap-2 sm:gap-4">
-              {palette.map((color) => (
-                <ColorCard key={color.name} name={color.name} hex={color.hex} />
+          {palettes.length > 0 ? (
+            <div className="space-y-12">
+              {palettes.map((palette, index) => (
+                <Palette
+                  key={index}
+                  title={paletteNames[index]}
+                  colors={palette}
+                />
               ))}
             </div>
           ) : (
@@ -102,7 +150,7 @@ ${palette.map((c) => `          '${c.name}': '${c.hex}'`).join(",\n")}
             </div>
           )}
 
-          {palette.length > 0 && <UIExamples palette={palette} />}
+          {palettes.length > 0 && <UIExamples palette={palettes[0]} />}
         </main>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -115,7 +163,9 @@ ${palette.map((c) => `          '${c.name}': '${c.hex}'`).join(",\n")}
             </DialogHeader>
             <div className="mt-2 rounded-md bg-slate-950 p-4 overflow-x-auto">
               <pre>
-                <code className="text-white text-sm">{tailwindConfigString}</code>
+                <code className="text-white text-sm">
+                  {tailwindConfigString}
+                </code>
               </pre>
             </div>
             <DialogFooter className="sm:justify-start">

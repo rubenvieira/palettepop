@@ -39,3 +39,47 @@ export const generatePalette = (baseColor: string): PaletteColor[] => {
     return [];
   }
 };
+
+export type HarmonyType = "analogous" | "triadic" | "complementary" | "split-complementary";
+
+export const harmonySchemes: { name: string; value: HarmonyType }[] = [
+  { name: "Analogous", value: "analogous" },
+  { name: "Triadic", value: "triadic" },
+  { name: "Complementary", value: "complementary" },
+  { name: "Split Complementary", value: "split-complementary" },
+];
+
+export const generateHarmonies = (baseColor: string, harmony: HarmonyType): string[] => {
+  try {
+    if (!chroma.valid(baseColor)) return [];
+    const base = chroma(baseColor);
+
+    switch (harmony) {
+      case "analogous":
+        return [
+          base.hex(),
+          base.set("hsl.h", "+30").hex(),
+          base.set("hsl.h", "-30").hex(),
+        ];
+      case "triadic":
+        return [
+          base.hex(),
+          base.set("hsl.h", "+120").hex(),
+          base.set("hsl.h", "-120").hex(),
+        ];
+      case "complementary":
+        return [base.hex(), base.set("hsl.h", "+180").hex()];
+      case "split-complementary":
+        return [
+          base.hex(),
+          base.set("hsl.h", "+150").hex(),
+          base.set("hsl.h", "-150").hex(),
+        ];
+      default:
+        return [base.hex()];
+    }
+  } catch (e) {
+    console.error("Invalid color", e);
+    return [];
+  }
+};
