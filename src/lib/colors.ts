@@ -40,9 +40,10 @@ export const generatePalette = (baseColor: string): PaletteColor[] => {
   }
 };
 
-export type HarmonyType = "analogous" | "triadic" | "complementary" | "split-complementary";
+export type HarmonyType = "single" | "analogous" | "triadic" | "complementary" | "split-complementary";
 
 export const harmonySchemes: { name: string; value: HarmonyType }[] = [
+  { name: "Single Color", value: "single" },
   { name: "Analogous", value: "analogous" },
   { name: "Triadic", value: "triadic" },
   { name: "Complementary", value: "complementary" },
@@ -55,6 +56,8 @@ export const generateHarmonies = (baseColor: string, harmony: HarmonyType): stri
     const base = chroma(baseColor);
 
     switch (harmony) {
+      case "single":
+        return [base.hex()];
       case "analogous":
         return [
           base.hex(),

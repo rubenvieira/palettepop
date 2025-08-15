@@ -31,7 +31,7 @@ import { Copy, Shuffle } from "lucide-react";
 
 const Index = () => {
   const [baseColor, setBaseColor] = useState("#19CE41");
-  const [harmony, setHarmony] = useState<HarmonyType>("triadic");
+  const [harmony, setHarmony] = useState<HarmonyType>("single");
   const [palettes, setPalettes] = useState<PaletteColor[][]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
