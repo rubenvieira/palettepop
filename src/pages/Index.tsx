@@ -32,18 +32,33 @@ import { Copy, Shuffle } from "lucide-react";
 const Index = () => {
   const [baseColor, setBaseColor] = useState("#19CE41");
   const [harmony, setHarmony] = useState<HarmonyType>("single");
+  const [harmonyColors, setHarmonyColors] = useState<string[]>([]);
   const [palettes, setPalettes] = useState<PaletteColor[][]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
     if (chroma.valid(baseColor)) {
-      const harmonyColors = generateHarmonies(baseColor, harmony);
-      const newPalettes = harmonyColors.map((color) => generatePalette(color));
-      setPalettes(newPalettes);
-    } else {
-      setPalettes([]);
+      const newHarmonyColors = generateHarmonies(baseColor, harmony);
+      setHarmonyColors(newHarmonyColors);
     }
   }, [baseColor, harmony]);
+
+  useEffect(() => {
+    const newPalettes = harmonyColors
+      .filter((color) => chroma.valid(color))
+      .map((color) => generatePalette(color));
+    setPalettes(newPalettes);
+  }, [harmonyColors]);
+
+  const handleHarmonyColorChange = (newColor: string, index: number) => {
+    const updatedColors = [...harmonyColors];
+    updatedColors[index] = newColor;
+    setHarmonyColors(updatedColors);
+
+    if (chroma.valid(newColor)) {
+      setBaseColor(newColor);
+    }
+  };
 
   const handleRandomColor = () => {
     const randomColor = chroma.random().hex();
@@ -87,30 +102,32 @@ ${palettes
       <div className="container mx-auto p-4 sm:p-8">
         <header className="flex flex-col sm:flex-row justify-between items-center gap-4 my-8">
           <div className="flex flex-wrap items-center gap-4">
-            <div className="relative">
-              <Input
-                type="text"
-                value={baseColor}
-                onChange={(e) => setBaseColor(e.target.value)}
-                className="pl-12 text-base h-10 w-40"
-                aria-label="Base Color"
-              />
-              <div
-                className="absolute left-3 top-1/2 -translate-y-1/2 h-6 w-6 rounded-md border"
-                style={{
-                  backgroundColor: chroma.valid(baseColor)
-                    ? baseColor
-                    : "transparent",
-                }}
-              />
-            </div>
+            {harmonyColors.map((color, index) => (
+              <div className="relative" key={index}>
+                <Input
+                  type="text"
+                  value={color}
+                  onChange={(e) => handleHarmonyColorChange(e.target.value, index)}
+                  className="pl-12 text-base h-10 w-40"
+                  aria-label={`Harmony Color ${index + 1}`}
+                />
+                <div
+                  className="absolute left-3 top-1/2 -translate-y-1/2 h-6 w-6 rounded-md border"
+                  style={{
+                    backgroundColor: chroma.valid(color)
+                      ? color
+                      : "transparent",
+                  }}
+                />
+              </div>
+            ))}
             <Button onClick={handleRandomColor} variant="outline">
               <Shuffle className="h-4 w-4 mr-2" />
               Random
             </Button>
             <Select
               value={harmony}
-              onValueChange={(value) => setHarmony(value as HarmonyType)}
+              onValuechange={(value) => setHarmony(value as HarmonyType)}
             >
               <SelectTrigger className="w-[200px]">
                 <SelectValue placeholder="Select harmony" />
