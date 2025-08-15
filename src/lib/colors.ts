@@ -76,6 +76,34 @@ export const generateHarmonies = (baseColor: string, harmony: HarmonyType): stri
   try {
     if (!chroma.valid(baseColor)) return [];
     const base = chroma(baseColor);
+    const isAchromatic = base.get("lch.c") < 5;
+
+    if (isAchromatic && harmony !== "single") {
+      const generateVibrantColor = () => chroma.hsl(Math.random() * 360, 0.8, 0.6);
+
+      switch (harmony) {
+        case "complementary":
+          return [base.hex(), generateVibrantColor().hex()];
+        case "analogous": {
+          const randColor = generateVibrantColor();
+          return [base.hex(), randColor.hex(), randColor.set("hsl.h", "+30").hex()];
+        }
+        case "triadic": {
+          const randColor = generateVibrantColor();
+          return [base.hex(), randColor.hex(), randColor.set("hsl.h", "+120").hex()];
+        }
+        case "split-complementary": {
+          const randColor = generateVibrantColor();
+          return [
+            base.hex(),
+            randColor.set("hsl.h", "+150").hex(),
+            randColor.set("hsl.h", "-150").hex(),
+          ];
+        }
+        default:
+          return [base.hex()];
+      }
+    }
 
     switch (harmony) {
       case "single":
