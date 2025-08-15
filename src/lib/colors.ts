@@ -9,31 +9,53 @@ export const generatePalette = (baseColor: string): PaletteColor[] => {
   try {
     if (!chroma.valid(baseColor)) return [];
 
-    // We want 11 shades: 50, 100, ..., 500 (base), ..., 900, 950
-    // 5 lighter shades, base, 5 darker shades.
-    const lightScale = chroma.scale(["white", baseColor]).mode("lch").colors(7);
-    const darkScale = chroma.scale([baseColor, "black"]).mode("lch").colors(7);
+    const hue = chroma(baseColor).get("lch.h") || 0; // Default hue to 0 for grays
+    const chromaValue = chroma(baseColor).get("lch.c");
 
-    const paletteColors = [
-      lightScale[1],
-      lightScale[2],
-      lightScale[3],
-      lightScale[4],
-      lightScale[5],
-      baseColor,
-      darkScale[1],
-      darkScale[2],
-      darkScale[3],
-      darkScale[4],
-      darkScale[5],
-    ].map((c) => chroma(c).hex());
-
+    // A pre-defined map of lightness values for each shade.
+    // These are chosen to create a perceptually balanced palette.
+    const lightnessMap: { [key: number]: number } = {
+      50: 97,
+      100: 93,
+      200: 85,
+      300: 75,
+      400: 65,
+      500: 55,
+      600: 45,
+      700: 35,
+      800: 25,
+      900: 15,
+      950: 8,
+    };
     const shadeKeys = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
 
-    return shadeKeys.map((key, index) => ({
-      name: key,
-      hex: paletteColors[index],
+    // Generate an "ideal" palette using the hue and chroma of the base color.
+    const idealPalette = shadeKeys.map((shade) => ({
+      name: shade,
+      hex: chroma.lch(lightnessMap[shade], chromaValue, hue).hex(),
     }));
+
+    // Find which shade in our ideal palette is closest to the user's input color.
+    let closestShadeName: number = 500;
+    let minDistance = Infinity;
+
+    idealPalette.forEach((color) => {
+      const distance = chroma.deltaE(baseColor, color.hex);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestShadeName = color.name;
+      }
+    });
+
+    // Create the final palette by replacing the closest shade with the user's exact color.
+    const finalPalette = idealPalette.map((color) => {
+      if (color.name === closestShadeName) {
+        return { ...color, hex: baseColor };
+      }
+      return color;
+    });
+
+    return finalPalette;
   } catch (e) {
     console.error("Invalid color", e);
     return [];
