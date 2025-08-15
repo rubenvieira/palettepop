@@ -127,7 +127,7 @@ ${palettes
             </Button>
             <Select
               value={harmony}
-              onValuechange={(value) => setHarmony(value as HarmonyType)}
+              onValueChange={(value) => setHarmony(value as HarmonyType)}
             >
               <SelectTrigger className="w-[200px]">
                 <SelectValue placeholder="Select harmony" />
@@ -177,7 +177,7 @@ ${palettes
               <DialogDescription>
                 Copy and paste this into your tailwind.config.js file.
               </DialogDescription>
-            </DialogHeader>
+            </Header>
             <div className="mt-2 rounded-md bg-slate-950 p-4 overflow-x-auto">
               <pre>
                 <code className="text-white text-sm">
