@@ -50,66 +50,6 @@ const Index = () => {
     setPalettes(newPalettes);
   }, [harmonyColors]);
 
-  useEffect(() => {
-    if (palettes.length === 0) return;
-
-    const root = document.documentElement;
-
-    const setCssVar = (name: string, hex: string) => {
-      if (!chroma.valid(hex)) return;
-      const hsl = chroma(hex).hsl();
-      // Format for CSS: H S% L%
-      const h = isNaN(hsl[0]) ? 0 : hsl[0].toFixed(1);
-      const s = (hsl[1] * 100).toFixed(1);
-      const l = (hsl[2] * 100).toFixed(1);
-      root.style.setProperty(name, `${h} ${s}% ${l}%`);
-    };
-
-    const updatePaletteVars = (palette: PaletteColor[], name: string) => {
-      const defaultColor = palette.find((c) => c.name === 500)?.hex;
-      if (defaultColor) {
-        setCssVar(`--${name}`, defaultColor);
-        const foreground =
-          chroma.contrast(defaultColor, "white") > 4.5 ? "#FFFFFF" : "#000000";
-        setCssVar(`--${name}-foreground`, foreground);
-      }
-    };
-
-    const primaryPalette = palettes[0] || [];
-    const secondaryPalette = palettes[1] || primaryPalette;
-    const accentPalette = palettes[2] || secondaryPalette;
-
-    updatePaletteVars(primaryPalette, "primary");
-    updatePaletteVars(secondaryPalette, "secondary");
-    updatePaletteVars(accentPalette, "accent");
-    // Map accent to destructive for components like destructive buttons
-    updatePaletteVars(accentPalette, "destructive");
-
-    // Update base theme colors from primary palette
-    const p50 = primaryPalette.find((c) => c.name === 50)?.hex;
-    const p100 = primaryPalette.find((c) => c.name === 100)?.hex;
-    const p200 = primaryPalette.find((c) => c.name === 200)?.hex;
-    const p400 = primaryPalette.find((c) => c.name === 400)?.hex;
-    const p500 = primaryPalette.find((c) => c.name === 500)?.hex;
-    const p950 = primaryPalette.find((c) => c.name === 950)?.hex;
-
-    if (p50) setCssVar("--background", p50);
-    if (p950) setCssVar("--foreground", p950);
-
-    if (p50) setCssVar("--card", p50);
-    if (p950) setCssVar("--card-foreground", p950);
-
-    if (p50) setCssVar("--popover", p50);
-    if (p950) setCssVar("--popover-foreground", p950);
-
-    if (p100) setCssVar("--muted", p100);
-    if (p400) setCssVar("--muted-foreground", p400);
-
-    if (p200) setCssVar("--border", p200);
-    if (p200) setCssVar("--input", p200);
-    if (p500) setCssVar("--ring", p500);
-  }, [palettes]);
-
   const handleHarmonyColorChange = (newColor: string, index: number) => {
     const updatedColors = [...harmonyColors];
     updatedColors[index] = newColor;

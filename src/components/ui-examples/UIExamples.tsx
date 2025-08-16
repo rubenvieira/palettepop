@@ -18,6 +18,7 @@ import { LoginForm } from "./LoginForm";
 import { PricingCard } from "./PricingCard";
 import { UserProfile } from "./UserProfile";
 import { Notifications } from "./Notifications";
+import chroma from "chroma-js";
 
 interface UIExamplesProps {
   palettes: PaletteColor[][];
@@ -33,6 +34,10 @@ export const UIExamples = ({ palettes }: UIExamplesProps) => {
   const p500 = primary.find((c) => c.name === 500)?.hex || "#000000";
   const s500 = secondary.find((c) => c.name === 500)?.hex || "#000000";
   const a500 = accent.find((c) => c.name === 500)?.hex || "#000000";
+
+  const getTextColor = (color: string) => {
+    return chroma.contrast(color, 'white') > 4.5 ? 'white' : 'black';
+  }
 
   return (
     <div className="mt-16">
@@ -63,9 +68,15 @@ export const UIExamples = ({ palettes }: UIExamplesProps) => {
               </SelectContent>
             </Select>
             <div className="flex gap-2">
-              <Button>Primary</Button>
-              <Button variant="secondary">Secondary</Button>
-              <Button variant="destructive">Accent</Button>
+              <Button style={{ backgroundColor: p500, color: getTextColor(p500) }}>
+                Primary
+              </Button>
+              <Button style={{ backgroundColor: s500, color: getTextColor(s500) }}>
+                Secondary
+              </Button>
+              <Button style={{ backgroundColor: a500, color: getTextColor(a500) }}>
+                Accent
+              </Button>
             </div>
           </CardContent>
         </Card>
