@@ -9,7 +9,6 @@ interface PricingCardProps {
 }
 
 export const PricingCard = ({ primaryColor, accentColor }: PricingCardProps) => {
-  const buttonTextColor = chroma.contrast(primaryColor, 'white') > 4.5 ? 'white' : 'black';
   const headerTextColor = chroma.contrast(accentColor, 'white') > 4.5 ? 'white' : 'black';
 
   return (
@@ -28,7 +27,7 @@ export const PricingCard = ({ primaryColor, accentColor }: PricingCardProps) => 
         </ul>
       </CardContent>
       <CardFooter>
-        <Button style={{ backgroundColor: primaryColor, color: buttonTextColor }} className="w-full">
+        <Button className="w-full">
           Get Started
         </Button>
       </CardFooter>
