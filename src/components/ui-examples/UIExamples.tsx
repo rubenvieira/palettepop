@@ -1,137 +1,102 @@
 import { PaletteColor } from "@/lib/colors";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Switch } from "@/components/ui/switch";
-import { Progress } from "@/components/ui/progress";
 import { ExpensesChart } from "./ExpensesChart";
 import { StatsChart } from "./StatsChart";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { LoginForm } from "./LoginForm";
+import { PricingCard } from "./PricingCard";
+import { UserProfile } from "./UserProfile";
+import { Notifications } from "./Notifications";
 import chroma from "chroma-js";
-import { Terminal } from "lucide-react";
 
 interface UIExamplesProps {
   palettes: PaletteColor[][];
 }
 
-const getTextColor = (bgHex: string) => {
-  try {
-    return chroma.contrast(bgHex, 'white') >= 4.5 ? 'white' : 'black';
-  } catch (e) {
-    return 'black';
-  }
-};
-
 export const UIExamples = ({ palettes }: UIExamplesProps) => {
-  if (!palettes || palettes.length === 0 || palettes[0].length < 11) {
-    return null;
+  if (palettes.length === 0) return null;
+
+  const primary = palettes[0] || [];
+  const secondary = palettes[1] || primary;
+  const accent = palettes[2] || secondary;
+
+  const p500 = primary.find((c) => c.name === 500)?.hex || "#000000";
+  const s500 = secondary.find((c) => c.name === 500)?.hex || "#000000";
+  const a500 = accent.find((c) => c.name === 500)?.hex || "#000000";
+
+  const getTextColor = (color: string) => {
+    return chroma.contrast(color, 'white') > 4.5 ? 'white' : 'black';
   }
-
-  const cssVars: React.CSSProperties = {};
-  const paletteNames = ["primary", "secondary", "accent"];
-  const finalPalettes: PaletteColor[][] = [
-    palettes[0],
-    palettes[1] || palettes[0],
-    palettes[2] || palettes[1] || palettes[0]
-  ];
-
-  finalPalettes.forEach((palette, index) => {
-    const name = paletteNames[index];
-    palette.forEach(color => {
-      cssVars[`--${name}-${color.name}`] = color.hex;
-    });
-    const baseColor = palette.find(c => c.name === 500)?.hex;
-    if (baseColor) {
-      cssVars[`--${name}-fg`] = getTextColor(baseColor);
-    }
-    const lightColor = palette.find(c => c.name === 100)?.hex;
-    if (lightColor) {
-      cssVars[`--${name}-light-fg`] = getTextColor(lightColor);
-    }
-  });
 
   return (
-    <div className="mt-16" style={cssVars}>
+    <div className="mt-16">
       <h2 className="text-3xl font-bold mb-8 text-center">UI Examples</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {/* Column 1 */}
-        <div className="space-y-8">
-          <Card>
-            <CardHeader><CardTitle>Buttons</CardTitle></CardHeader>
-            <CardContent className="flex flex-wrap gap-4">
-              <Button className="bg-[var(--primary-500)] text-[var(--primary-fg)] hover:bg-[var(--primary-600)]">Primary</Button>
-              <Button className="bg-[var(--secondary-500)] text-[var(--secondary-fg)] hover:bg-[var(--secondary-600)]">Secondary</Button>
-              <Button variant="outline" className="border-[var(--primary-500)] text-[var(--primary-500)] hover:bg-[var(--primary-50)] hover:text-[var(--primary-600)]">Outline</Button>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader><CardTitle>Badges</CardTitle></CardHeader>
-            <CardContent className="flex flex-wrap gap-4">
-              <Badge className="bg-[var(--primary-100)] text-[var(--primary-light-fg)]">Primary</Badge>
-              <Badge className="bg-[var(--secondary-100)] text-[var(--secondary-light-fg)]">Secondary</Badge>
-              <Badge className="bg-[var(--accent-100)] text-[var(--accent-light-fg)]">Accent</Badge>
-            </CardContent>
-          </Card>
-          <Alert className="bg-[var(--primary-50)] border-[var(--primary-200)] text-[var(--primary-800)]">
-            <Terminal className="h-4 w-4" stroke="var(--primary-800)" />
-            <AlertTitle>Primary Alert</AlertTitle>
-            <AlertDescription>
-              This is an alert component styled with the primary color.
-            </AlertDescription>
-          </Alert>
-        </div>
-
-        {/* Column 2 */}
-        <div className="space-y-8">
-          <Card>
-            <CardHeader><CardTitle>Form Elements</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span>Toggle Switch</span>
-                <Switch className="data-[state=checked]:bg-[var(--primary-500)]" />
-              </div>
-              <div className="space-y-2">
-                <span>Progress Bar</span>
-                <Progress value={66} className="[&>div]:bg-[var(--primary-500)]" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader><CardTitle>Expenses</CardTitle></CardHeader>
-            <CardContent>
-              <ExpensesChart
-                primary={finalPalettes[0][5].hex}
-                secondary={finalPalettes[1][5].hex}
-              />
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Column 3 */}
-        <div className="space-y-8">
-          <Card>
-            <CardHeader><CardTitle>Statistics</CardTitle></CardHeader>
-            <CardContent className="grid grid-cols-2 gap-4 text-center">
-              <div>
-                <div className="text-2xl font-bold text-[var(--primary-700)]">2,350</div>
-                <div className="text-sm text-muted-foreground">Downloads</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-[var(--secondary-700)]">$58.2k</div>
-                <div className="text-sm text-muted-foreground">Revenue</div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader><CardTitle>Monthly Stats</CardTitle></CardHeader>
-            <CardContent>
-              <StatsChart
-                primary={finalPalettes[0][5].hex}
-                accent={finalPalettes[2][5].hex}
-              />
-            </CardContent>
-          </Card>
-        </div>
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
+        <Card>
+          <CardHeader>
+            <CardTitle>Basic Components</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <Checkbox id="terms" />
+              <Label htmlFor="terms">Accept terms and conditions</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch id="airplane-mode" />
+              <Label htmlFor="airplane-mode">Airplane Mode</Label>
+            </div>
+            <Input placeholder="Enter your email" />
+            <Select>
+              <SelectTrigger>
+                <SelectValue placeholder="Theme" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="light">Light</SelectItem>
+                <SelectItem value="dark">Dark</SelectItem>
+                <SelectItem value="system">System</SelectItem>
+              </SelectContent>
+            </Select>
+            <div className="flex gap-2">
+              <Button style={{ backgroundColor: p500, color: getTextColor(p500) }}>
+                Primary
+              </Button>
+              <Button style={{ backgroundColor: s500, color: getTextColor(s500) }}>
+                Secondary
+              </Button>
+              <Button style={{ backgroundColor: a500, color: getTextColor(a500) }}>
+                Accent
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+        <StatsChart
+          primaryColor={p500}
+          secondaryColor={s500}
+          accentColor={a500}
+        />
+        <ExpensesChart primaryColor={p500} secondaryColor={s500} />
+        <LoginForm primaryColor={p500} />
+        <PricingCard primaryColor={p500} accentColor={a500} />
+        <UserProfile primaryColor={p500} accentColor={a500} />
+        <Card>
+          <CardHeader>
+            <CardTitle>Notifications</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Notifications primaryColor={p500} secondaryColor={s500} accentColor={a500} />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
