@@ -14,7 +14,7 @@ import {
   Moon,
   Keyboard,
 } from "lucide-react";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/components/ThemeProvider";
 
 interface CommandPaletteProps {
   onRandomize: () => void;
@@ -48,7 +48,7 @@ export function CommandPalette({
 }: CommandPaletteProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const { setTheme, theme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
 
   const commands: Command[] = [
     {
@@ -100,7 +100,7 @@ export function CommandPalette({
       label: theme === "dark" ? "Switch to light mode" : "Switch to dark mode",
       shortcut: "Ctrl+D",
       icon: theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />,
-      action: () => setTheme(theme === "dark" ? "light" : "dark"),
+      action: toggleTheme,
     },
     {
       id: "shortcuts",
@@ -145,13 +145,13 @@ export function CommandPalette({
         onSavedPalettes();
       } else if ((e.metaKey || e.ctrlKey) && e.key === "d") {
         e.preventDefault();
-        setTheme(theme === "dark" ? "light" : "dark");
+        toggleTheme();
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onUndo, onRedo, onExport, onShare, onSavedPalettes, theme, setTheme]);
+  }, [onUndo, onRedo, onExport, onShare, onSavedPalettes, theme, toggleTheme]);
 
   const runCommand = (cmd: Command) => {
     if (cmd.disabled) return;
