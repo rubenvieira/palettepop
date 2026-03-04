@@ -40,8 +40,7 @@ export const UIExamples = ({ palettes }: UIExamplesProps) => {
   }
 
   return (
-    <div className="mt-16">
-      <h2 className="text-3xl font-bold mb-8 text-center">UI Examples</h2>
+    <div>
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
         <Card>
           <CardHeader>
@@ -81,11 +80,10 @@ export const UIExamples = ({ palettes }: UIExamplesProps) => {
           </CardContent>
         </Card>
         <StatsChart
-          primaryColor={p500}
-          secondaryColor={s500}
-          accentColor={a500}
+          primary={p500}
+          accent={a500}
         />
-        <ExpensesChart primaryColor={p500} secondaryColor={s500} />
+        <ExpensesChart primary={p500} secondary={s500} />
         <LoginForm primaryColor={p500} />
         <PricingCard primaryColor={p500} accentColor={a500} />
         <UserProfile primaryColor={p500} accentColor={a500} />

@@ -1,5 +1,11 @@
 import { showSuccess } from "@/utils/toast";
 import chroma from "chroma-js";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Copy } from "lucide-react";
 
 interface ColorCardProps {
   name: string | number;
@@ -7,21 +13,67 @@ interface ColorCardProps {
 }
 
 export const ColorCard = ({ name, hex }: ColorCardProps) => {
-  const handleCopy = (value: string) => {
+  const handleCopy = (value: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
     navigator.clipboard.writeText(value);
-    showSuccess(`Copied ${value} to clipboard!`);
+    showSuccess(`Copied ${value}`);
   };
 
-  const textColor = chroma.contrast(hex, 'white') > 4.5 ? 'white' : 'black';
+  const textColor =
+    chroma.contrast(hex, "white") > 4.5 ? "white" : "black";
+  const rgb = chroma(hex).css();
+  const hsl = chroma(hex).css("hsl");
+  const luminance = chroma(hex).luminance();
 
   return (
-    <div
-      className="h-28 flex flex-col justify-between p-3 rounded-lg cursor-pointer transition-transform hover:scale-105"
-      style={{ backgroundColor: hex, color: textColor }}
-      onClick={() => handleCopy(hex)}
-    >
-      <div className="font-bold">{name}</div>
-      <div className="font-mono uppercase text-sm">{hex.substring(1)}</div>
-    </div>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div
+          className="group relative h-28 flex flex-col justify-between p-3 rounded-lg cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-lg hover:z-10"
+          style={{ backgroundColor: hex, color: textColor }}
+          onClick={() => handleCopy(hex)}
+        >
+          <div className="font-bold text-sm">{name}</div>
+          <div className="space-y-1">
+            <div className="font-mono uppercase text-xs">
+              {hex.substring(1)}
+            </div>
+            <div className="w-full h-1 rounded-full bg-black/10">
+              <div
+                className="h-full rounded-full transition-all"
+                style={{
+                  width: `${luminance * 100}%`,
+                  backgroundColor: textColor,
+                  opacity: 0.3,
+                }}
+              />
+            </div>
+          </div>
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg bg-black/5">
+            <Copy className="h-4 w-4" style={{ color: textColor }} />
+          </div>
+        </div>
+      </TooltipTrigger>
+      <TooltipContent side="bottom" className="space-y-1 font-mono text-xs">
+        <p
+          className="cursor-pointer hover:underline"
+          onClick={(e) => handleCopy(hex, e as unknown as React.MouseEvent)}
+        >
+          HEX: {hex}
+        </p>
+        <p
+          className="cursor-pointer hover:underline"
+          onClick={(e) => handleCopy(rgb, e as unknown as React.MouseEvent)}
+        >
+          RGB: {rgb}
+        </p>
+        <p
+          className="cursor-pointer hover:underline"
+          onClick={(e) => handleCopy(hsl, e as unknown as React.MouseEvent)}
+        >
+          HSL: {hsl}
+        </p>
+      </TooltipContent>
+    </Tooltip>
   );
 };
