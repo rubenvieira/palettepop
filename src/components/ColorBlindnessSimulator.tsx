@@ -7,19 +7,22 @@ import chroma from "chroma-js";
 
 interface ColorBlindnessSimulatorProps {
   palettes: PaletteColor[][];
+  paletteNames?: string[];
 }
 
 export function ColorBlindnessSimulator({
   palettes,
+  paletteNames = [],
 }: ColorBlindnessSimulatorProps) {
   const [compareMode, setCompareMode] = useState(false);
+  const [activePaletteIndex, setActivePaletteIndex] = useState(0);
 
-  const primaryPalette = palettes[0] ?? [];
+  const activePalette = palettes[activePaletteIndex] ?? palettes[0] ?? [];
 
   const scores = useMemo(() => {
-    if (primaryPalette.length === 0) return [];
+    if (activePalette.length === 0) return [];
     return cvdTypes.map(({ type }) => {
-      const simulated = simulatePalette(primaryPalette, type);
+      const simulated = simulatePalette(activePalette, type);
       const keyShades = [50, 200, 500, 700, 950];
       const keyColors = simulated.filter((c) => keyShades.includes(c.name as number));
       let minDist = Infinity;
@@ -31,7 +34,7 @@ export function ColorBlindnessSimulator({
       }
       return { type, score: Math.round(minDist) };
     });
-  }, [primaryPalette]);
+  }, [activePalette]);
 
   if (palettes.length === 0) return null;
 
@@ -44,7 +47,19 @@ export function ColorBlindnessSimulator({
         How your palette appears under different color vision deficiencies
       </p>
 
-      <div className="flex items-center justify-center gap-2 mb-8">
+      <div className="flex items-center justify-center gap-2 mb-8 flex-wrap">
+        {palettes.length > 1 &&
+          palettes.map((_, i) => (
+            <Button
+              key={i}
+              variant={activePaletteIndex === i ? "default" : "outline"}
+              size="sm"
+              onClick={() => setActivePaletteIndex(i)}
+              className="text-xs capitalize"
+            >
+              {paletteNames[i] || `Palette ${i + 1}`}
+            </Button>
+          ))}
         <Button
           variant={compareMode ? "default" : "outline"}
           size="sm"
@@ -63,7 +78,7 @@ export function ColorBlindnessSimulator({
             Normal
           </div>
           <div className="flex flex-1 h-10 rounded-lg overflow-hidden">
-            {primaryPalette.map((c) => (
+            {activePalette.map((c) => (
               <div
                 key={c.name}
                 className="flex-1 transition-colors duration-300"
@@ -74,7 +89,7 @@ export function ColorBlindnessSimulator({
         </div>
 
         {cvdTypes.map(({ type, name, description }) => {
-          const simulated = simulatePalette(primaryPalette, type);
+          const simulated = simulatePalette(activePalette, type);
           const scoreData = scores.find((s) => s.type === type);
           const score = scoreData?.score ?? 0;
           const scoreLabel = score > 20 ? "Good" : score > 10 ? "Fair" : "Poor";
@@ -104,7 +119,7 @@ export function ColorBlindnessSimulator({
                 </div>
                 <div className="flex flex-1 h-10 rounded-lg overflow-hidden">
                   {compareMode ? (
-                    primaryPalette.map((c, i) => (
+                    activePalette.map((c, i) => (
                       <div key={c.name} className="flex-1 flex flex-col">
                         <div className="flex-1" style={{ backgroundColor: c.hex }} />
                         <div className="flex-1" style={{ backgroundColor: simulated[i].hex }} />

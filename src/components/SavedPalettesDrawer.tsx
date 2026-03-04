@@ -45,13 +45,19 @@ export function SavedPalettesDrawer({
   currentHarmony,
 }: SavedPalettesDrawerProps) {
   const [saveName, setSaveName] = useState("");
+  const [saveTags, setSaveTags] = useState("");
   const [showSaveForm, setShowSaveForm] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSave = () => {
     if (!saveName.trim()) return;
-    onSave(saveName.trim(), currentBaseColor, currentHarmony);
+    const tags = saveTags
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
+    onSave(saveName.trim(), currentBaseColor, currentHarmony, tags);
     setSaveName("");
+    setSaveTags("");
     setShowSaveForm(false);
   };
 
@@ -95,25 +101,33 @@ export function SavedPalettesDrawer({
                 <Plus className="h-4 w-4 mr-1" /> Save Current
               </Button>
             ) : (
-              <div className="flex gap-2 flex-1">
+              <div className="flex flex-col gap-2 flex-1">
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Name..."
+                    value={saveName}
+                    onChange={(e) => setSaveName(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSave()}
+                    className="h-9"
+                    autoFocus
+                  />
+                  <Button onClick={handleSave} size="sm">
+                    Save
+                  </Button>
+                  <Button
+                    onClick={() => { setShowSaveForm(false); setSaveName(""); setSaveTags(""); }}
+                    size="sm"
+                    variant="ghost"
+                  >
+                    Cancel
+                  </Button>
+                </div>
                 <Input
-                  placeholder="Name..."
-                  value={saveName}
-                  onChange={(e) => setSaveName(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSave()}
-                  className="h-9"
-                  autoFocus
+                  placeholder="Tags (comma-separated)..."
+                  value={saveTags}
+                  onChange={(e) => setSaveTags(e.target.value)}
+                  className="h-8 text-xs"
                 />
-                <Button onClick={handleSave} size="sm">
-                  Save
-                </Button>
-                <Button
-                  onClick={() => { setShowSaveForm(false); setSaveName(""); }}
-                  size="sm"
-                  variant="ghost"
-                >
-                  Cancel
-                </Button>
               </div>
             )}
             {!showSaveForm && (
@@ -180,6 +194,18 @@ export function SavedPalettesDrawer({
                       <span>{dateStr}</span>
                     </div>
                   </div>
+                  {palette.tags.length > 0 && (
+                    <div className="flex gap-1 flex-wrap">
+                      {palette.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="px-1.5 py-0.5 rounded-full bg-muted text-[10px] text-muted-foreground"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                   <div className="flex gap-0.5">
                     {colors
                       .filter((c) => chroma.valid(c))

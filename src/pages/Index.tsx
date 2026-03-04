@@ -9,6 +9,9 @@ import { ColorBlindnessSimulator } from "@/components/ColorBlindnessSimulator";
 import { GradientGenerator } from "@/components/GradientGenerator";
 import { BrandMockups } from "@/components/brand-mockups/BrandMockups";
 import { CommandPalette } from "@/components/CommandPalette";
+import { ColorDetailPanel } from "@/components/ColorDetailPanel";
+import { ImageColorExtractor } from "@/components/ImageColorExtractor";
+import { KeyboardShortcutsDialog } from "@/components/KeyboardShortcutsDialog";
 import { usePalette } from "@/hooks/use-palette";
 import { useSavedPalettes } from "@/hooks/use-saved-palettes";
 import { encodePaletteToURL } from "@/lib/url-state";
@@ -46,6 +49,8 @@ const Index = () => {
 
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isSavedOpen, setIsSavedOpen] = useState(false);
+  const [inspectHex, setInspectHex] = useState<string | null>(null);
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
 
   useEffect(() => {
     const handleSpacebar = (e: KeyboardEvent) => {
@@ -79,6 +84,8 @@ const Index = () => {
 
   const openExport = useCallback(() => setIsExportOpen(true), []);
   const openSaved = useCallback(() => setIsSavedOpen(true), []);
+  const openShortcuts = useCallback(() => setIsShortcutsOpen(true), []);
+  const handleInspectColor = useCallback((hex: string) => setInspectHex(hex), []);
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -100,14 +107,17 @@ const Index = () => {
 
         <div className="container mx-auto p-4 sm:p-8">
           <main>
+            <ImageColorExtractor onColorSelect={setBaseColor} />
+
             {palettes.length > 0 ? (
-              <div className="space-y-12">
+              <div className="space-y-12 mt-12">
                 {palettes.map((palette, index) => (
                   <Palette
                     key={index}
                     title={paletteNames[index]}
                     colors={palette}
                     onRename={(name) => renamePalette(index, name)}
+                    onInspectColor={handleInspectColor}
                   />
                 ))}
               </div>
@@ -126,7 +136,10 @@ const Index = () => {
               paletteNames={paletteNames}
             />
 
-            <ColorBlindnessSimulator palettes={palettes} />
+            <ColorBlindnessSimulator
+              palettes={palettes}
+              paletteNames={paletteNames}
+            />
 
             <GradientGenerator
               palettes={palettes}
@@ -160,6 +173,19 @@ const Index = () => {
           currentHarmony={harmony}
         />
 
+        <ColorDetailPanel
+          hex={inspectHex}
+          open={inspectHex !== null}
+          onOpenChange={(open) => {
+            if (!open) setInspectHex(null);
+          }}
+        />
+
+        <KeyboardShortcutsDialog
+          open={isShortcutsOpen}
+          onOpenChange={setIsShortcutsOpen}
+        />
+
         <CommandPalette
           onRandomize={handleRandomColor}
           onExport={openExport}
@@ -169,6 +195,7 @@ const Index = () => {
           onRedo={redo}
           canUndo={canUndo}
           canRedo={canRedo}
+          onShowShortcuts={openShortcuts}
         />
       </div>
     </TooltipProvider>

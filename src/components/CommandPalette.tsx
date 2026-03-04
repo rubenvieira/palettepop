@@ -1,8 +1,13 @@
 import { useEffect, useState } from "react";
 import {
-  Dialog,
-  DialogContent,
-} from "@/components/ui/dialog";
+  CommandDialog,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+  CommandShortcut,
+} from "@/components/ui/command";
 import {
   Shuffle,
   Download,
@@ -25,15 +30,7 @@ interface CommandPaletteProps {
   onRedo: () => void;
   canUndo: boolean;
   canRedo: boolean;
-}
-
-interface Command {
-  id: string;
-  label: string;
-  shortcut?: string;
-  icon: React.ReactNode;
-  action: () => void;
-  disabled?: boolean;
+  onShowShortcuts: () => void;
 }
 
 export function CommandPalette({
@@ -45,79 +42,15 @@ export function CommandPalette({
   onRedo,
   canUndo,
   canRedo,
+  onShowShortcuts,
 }: CommandPaletteProps) {
   const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
   const { theme, toggleTheme } = useTheme();
-
-  const commands: Command[] = [
-    {
-      id: "random",
-      label: "Random palette",
-      shortcut: "Space",
-      icon: <Shuffle className="h-4 w-4" />,
-      action: onRandomize,
-    },
-    {
-      id: "undo",
-      label: "Undo",
-      shortcut: "Ctrl+Z",
-      icon: <Undo2 className="h-4 w-4" />,
-      action: onUndo,
-      disabled: !canUndo,
-    },
-    {
-      id: "redo",
-      label: "Redo",
-      shortcut: "Ctrl+Y",
-      icon: <Redo2 className="h-4 w-4" />,
-      action: onRedo,
-      disabled: !canRedo,
-    },
-    {
-      id: "export",
-      label: "Export palette",
-      shortcut: "Ctrl+E",
-      icon: <Download className="h-4 w-4" />,
-      action: onExport,
-    },
-    {
-      id: "share",
-      label: "Share palette",
-      shortcut: "Ctrl+L",
-      icon: <Share2 className="h-4 w-4" />,
-      action: onShare,
-    },
-    {
-      id: "saved",
-      label: "Saved palettes",
-      shortcut: "Ctrl+S",
-      icon: <Bookmark className="h-4 w-4" />,
-      action: onSavedPalettes,
-    },
-    {
-      id: "dark-mode",
-      label: theme === "dark" ? "Switch to light mode" : "Switch to dark mode",
-      shortcut: "Ctrl+D",
-      icon: theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />,
-      action: toggleTheme,
-    },
-    {
-      id: "shortcuts",
-      label: "Keyboard shortcuts",
-      shortcut: "?",
-      icon: <Keyboard className="h-4 w-4" />,
-      action: () => {},
-    },
-  ];
-
-  const filtered = commands.filter((cmd) =>
-    cmd.label.toLowerCase().includes(query.toLowerCase())
-  );
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      const isInput = document.activeElement?.tagName === "INPUT" ||
+      const isInput =
+        document.activeElement?.tagName === "INPUT" ||
         document.activeElement?.tagName === "TEXTAREA";
 
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
@@ -127,6 +60,12 @@ export function CommandPalette({
       }
 
       if (isInput) return;
+
+      if (e.key === "?" && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        onShowShortcuts();
+        return;
+      }
 
       if ((e.metaKey || e.ctrlKey) && e.key === "z") {
         e.preventDefault();
@@ -151,56 +90,72 @@ export function CommandPalette({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onUndo, onRedo, onExport, onShare, onSavedPalettes, theme, toggleTheme]);
+  }, [onUndo, onRedo, onExport, onShare, onSavedPalettes, onShowShortcuts, toggleTheme]);
 
-  const runCommand = (cmd: Command) => {
-    if (cmd.disabled) return;
+  const runCommand = (action: () => void) => {
     setOpen(false);
-    setQuery("");
-    cmd.action();
+    action();
   };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setQuery(""); }}>
-      <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden">
-        <div className="flex items-center border-b px-3">
-          <Keyboard className="h-4 w-4 mr-2 text-muted-foreground shrink-0" />
-          <input
-            className="flex-1 h-12 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-            placeholder="Type a command..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            autoFocus
-          />
-          <kbd className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono text-muted-foreground shrink-0">
-            ESC
-          </kbd>
-        </div>
-        <div className="max-h-[300px] overflow-y-auto p-1">
-          {filtered.length === 0 && (
-            <p className="text-sm text-muted-foreground text-center py-6">
-              No commands found.
-            </p>
-          )}
-          {filtered.map((cmd) => (
-            <button
-              key={cmd.id}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-md transition-colors
-                ${cmd.disabled ? "opacity-40 cursor-not-allowed" : "hover:bg-muted cursor-pointer"}`}
-              onClick={() => runCommand(cmd)}
-              disabled={cmd.disabled}
-            >
-              <span className="text-muted-foreground">{cmd.icon}</span>
-              <span className="flex-1 text-left">{cmd.label}</span>
-              {cmd.shortcut && (
-                <kbd className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono text-muted-foreground">
-                  {cmd.shortcut}
-                </kbd>
-              )}
-            </button>
-          ))}
-        </div>
-      </DialogContent>
-    </Dialog>
+    <CommandDialog open={open} onOpenChange={setOpen}>
+      <CommandInput placeholder="Type a command..." />
+      <CommandList>
+        <CommandEmpty>No commands found.</CommandEmpty>
+
+        <CommandGroup heading="Palette">
+          <CommandItem onSelect={() => runCommand(onRandomize)}>
+            <Shuffle className="mr-2 h-4 w-4" />
+            Random palette
+            <CommandShortcut>Space</CommandShortcut>
+          </CommandItem>
+          <CommandItem disabled={!canUndo} onSelect={() => runCommand(onUndo)}>
+            <Undo2 className="mr-2 h-4 w-4" />
+            Undo
+            <CommandShortcut>Ctrl+Z</CommandShortcut>
+          </CommandItem>
+          <CommandItem disabled={!canRedo} onSelect={() => runCommand(onRedo)}>
+            <Redo2 className="mr-2 h-4 w-4" />
+            Redo
+            <CommandShortcut>Ctrl+Y</CommandShortcut>
+          </CommandItem>
+        </CommandGroup>
+
+        <CommandGroup heading="Actions">
+          <CommandItem onSelect={() => runCommand(onExport)}>
+            <Download className="mr-2 h-4 w-4" />
+            Export palette
+            <CommandShortcut>Ctrl+E</CommandShortcut>
+          </CommandItem>
+          <CommandItem onSelect={() => runCommand(onShare)}>
+            <Share2 className="mr-2 h-4 w-4" />
+            Share palette
+            <CommandShortcut>Ctrl+L</CommandShortcut>
+          </CommandItem>
+          <CommandItem onSelect={() => runCommand(onSavedPalettes)}>
+            <Bookmark className="mr-2 h-4 w-4" />
+            Saved palettes
+            <CommandShortcut>Ctrl+S</CommandShortcut>
+          </CommandItem>
+        </CommandGroup>
+
+        <CommandGroup heading="Settings">
+          <CommandItem onSelect={() => runCommand(toggleTheme)}>
+            {theme === "dark" ? (
+              <Sun className="mr-2 h-4 w-4" />
+            ) : (
+              <Moon className="mr-2 h-4 w-4" />
+            )}
+            {theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            <CommandShortcut>Ctrl+D</CommandShortcut>
+          </CommandItem>
+          <CommandItem onSelect={() => runCommand(onShowShortcuts)}>
+            <Keyboard className="mr-2 h-4 w-4" />
+            Keyboard shortcuts
+            <CommandShortcut>?</CommandShortcut>
+          </CommandItem>
+        </CommandGroup>
+      </CommandList>
+    </CommandDialog>
   );
 }

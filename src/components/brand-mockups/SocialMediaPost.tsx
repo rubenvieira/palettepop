@@ -6,12 +6,16 @@ interface SocialMediaPostProps {
   primaryColor: string;
   secondaryColor: string;
   accentColor: string;
+  bgColor?: string;
+  subtleColor?: string;
 }
 
 export function SocialMediaPost({
   primaryColor,
   secondaryColor,
   accentColor,
+  bgColor,
+  subtleColor,
 }: SocialMediaPostProps) {
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -75,7 +79,7 @@ export function SocialMediaPost({
         />
       </div>
 
-      <div className="px-4 pb-4">
+      <div className="px-4 pb-4" style={bgColor ? { backgroundColor: bgColor } : undefined}>
         <p className="text-xs font-semibold" style={{ color: accentColor }}>
           {liked ? "1,235 likes" : "1,234 likes"}
         </p>
