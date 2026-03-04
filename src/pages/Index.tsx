@@ -1,69 +1,36 @@
-import { useState, useEffect } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { useEffect, useState } from "react";
 import { Palette } from "@/components/Palette";
-import {
-  generatePalette,
-  generateHarmonies,
-  harmonySchemes,
-  PaletteColor,
-  HarmonyType,
-} from "@/lib/colors";
-import { UIExamples } from "@/components/ui-examples/UIExamples";
-import chroma from "chroma-js";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { ExportDialog } from "@/components/ExportDialog";
+import { SavedPalettesDrawer } from "@/components/SavedPalettesDrawer";
+import { ContrastChecker } from "@/components/ContrastChecker";
+import { ColorBlindnessSimulator } from "@/components/ColorBlindnessSimulator";
+import { GradientGenerator } from "@/components/GradientGenerator";
+import { BrandMockups } from "@/components/brand-mockups/BrandMockups";
+import { usePalette } from "@/hooks/use-palette";
+import { useSavedPalettes } from "@/hooks/use-saved-palettes";
+import { encodePaletteToURL } from "@/lib/url-state";
 import { showSuccess } from "@/utils/toast";
-import { Copy, Shuffle } from "lucide-react";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const Index = () => {
-  const [baseColor, setBaseColor] = useState("#19CE41");
-  const [harmony, setHarmony] = useState<HarmonyType>("single");
-  const [harmonyColors, setHarmonyColors] = useState<string[]>([]);
-  const [palettes, setPalettes] = useState<PaletteColor[][]>([]);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const {
+    baseColor,
+    setBaseColor,
+    harmony,
+    setHarmony,
+    harmonyColors,
+    palettes,
+    paletteNames,
+    handleHarmonyColorChange,
+    handleRandomColor,
+  } = usePalette();
 
-  useEffect(() => {
-    if (chroma.valid(baseColor)) {
-      const newHarmonyColors = generateHarmonies(baseColor, harmony);
-      setHarmonyColors(newHarmonyColors);
-    }
-  }, [baseColor, harmony]);
+  const { savedPalettes, savePalette, deletePalette } = useSavedPalettes();
 
-  useEffect(() => {
-    const newPalettes = harmonyColors
-      .filter((color) => chroma.valid(color))
-      .map((color) => generatePalette(color));
-    setPalettes(newPalettes);
-  }, [harmonyColors]);
-
-  const handleHarmonyColorChange = (newColor: string, index: number) => {
-    const updatedColors = [...harmonyColors];
-    updatedColors[index] = newColor;
-    setHarmonyColors(updatedColors);
-
-    if (chroma.valid(newColor)) {
-      setBaseColor(newColor);
-    }
-  };
-
-  const handleRandomColor = () => {
-    const randomColor = chroma.random().hex();
-    setBaseColor(randomColor);
-  };
+  const [isExportOpen, setIsExportOpen] = useState(false);
+  const [isSavedOpen, setIsSavedOpen] = useState(false);
 
   useEffect(() => {
     const handleSpacebar = (e: KeyboardEvent) => {
@@ -73,141 +40,92 @@ const Index = () => {
       }
     };
     window.addEventListener("keydown", handleSpacebar);
-    return () => {
-      window.removeEventListener("keydown", handleSpacebar);
-    };
-  }, []);
+    return () => window.removeEventListener("keydown", handleSpacebar);
+  }, [handleRandomColor]);
 
-  const paletteNames = ["primary", "secondary", "accent"];
+  const handleShare = () => {
+    const url = encodePaletteToURL(baseColor, harmony);
+    navigator.clipboard.writeText(url);
+    showSuccess("Share link copied to clipboard!");
+    window.history.replaceState(null, "", url);
+  };
 
-  const tailwindConfigString = `module.exports = {
-  theme: {
-    extend: {
-      colors: {
-${palettes
-  .map(
-    (palette, index) =>
-      `        ${paletteNames[index] || `color${index + 1}`}: {\n${palette
-        .map((c) => `          '${c.name}': '${c.hex}'`)
-        .join(",\n")}\n        }`
-  )
-  .join(",\n")}
-      }
-    }
-  }
-};`;
+  const handleLoadPalette = (color: string, h: typeof harmony) => {
+    setBaseColor(color);
+    setHarmony(h);
+  };
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen">
-      <div className="container mx-auto p-4 sm:p-8">
-        <header className="flex flex-col sm:flex-row justify-between items-center gap-4 my-8">
-          <div className="flex flex-wrap items-center gap-4">
-            {harmonyColors.map((color, index) => (
-              <div className="relative" key={index}>
-                <Input
-                  type="text"
-                  value={color}
-                  onChange={(e) => handleHarmonyColorChange(e.target.value, index)}
-                  className="pl-12 text-base h-10 w-40"
-                  aria-label={`Harmony Color ${index + 1}`}
-                />
-                <div
-                  className="absolute left-3 top-1/2 -translate-y-1/2 h-6 w-6 rounded-md border"
-                  style={{
-                    backgroundColor: chroma.valid(color)
-                      ? color
-                      : "transparent",
-                  }}
-                />
-                <Input
-                  type="color"
-                  value={chroma.valid(color) ? color : '#000000'}
-                  onInput={(e) => handleHarmonyColorChange(e.currentTarget.value, index)}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 h-6 w-6 opacity-0 cursor-pointer"
-                  aria-label={`Pick Color for Harmony Color ${index + 1}`}
-                />
-              </div>
-            ))}
-            <Button onClick={handleRandomColor} variant="outline">
-              <Shuffle className="h-4 w-4 mr-2" />
-              Random
-            </Button>
-            <Select
-              value={harmony}
-              onValueChange={(value) => setHarmony(value as HarmonyType)}
-            >
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Select harmony" />
-              </SelectTrigger>
-              <SelectContent>
-                {harmonySchemes.map((scheme) => (
-                  <SelectItem key={scheme.value} value={scheme.value}>
-                    {scheme.name}
-                  </SelectItem>
+    <TooltipProvider delayDuration={200}>
+      <div className="bg-gray-50 dark:bg-gray-900 min-h-screen">
+        <Header
+          harmonyColors={harmonyColors}
+          harmony={harmony}
+          onHarmonyChange={setHarmony}
+          onColorChange={handleHarmonyColorChange}
+          onRandomize={handleRandomColor}
+          onExport={() => setIsExportOpen(true)}
+          onShare={handleShare}
+          onSavedPalettes={() => setIsSavedOpen(true)}
+        />
+
+        <div className="container mx-auto p-4 sm:p-8">
+          <main>
+            {palettes.length > 0 ? (
+              <div className="space-y-12">
+                {palettes.map((palette, index) => (
+                  <Palette
+                    key={index}
+                    title={paletteNames[index]}
+                    colors={palette}
+                  />
                 ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Button onClick={() => setIsDialogOpen(true)} variant="default">
-              Export
-            </Button>
-          </div>
-        </header>
+              </div>
+            ) : (
+              <div className="text-center py-16">
+                <p className="text-muted-foreground">
+                  Enter a valid CSS color to get started.
+                </p>
+              </div>
+            )}
 
-        <main>
-          {palettes.length > 0 ? (
-            <div className="space-y-12">
-              {palettes.map((palette, index) => (
-                <Palette
-                  key={index}
-                  title={paletteNames[index]}
-                  colors={palette}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-16">
-              <p className="text-muted-foreground">
-                Enter a valid CSS color to get started.
-              </p>
-            </div>
-          )}
+            <BrandMockups palettes={palettes} />
 
-          <UIExamples palettes={palettes} />
-        </main>
+            <ContrastChecker
+              palettes={palettes}
+              paletteNames={paletteNames}
+            />
 
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Export for Tailwind CSS</DialogTitle>
-              <DialogDescription>
-                Copy and paste this into your tailwind.config.js file.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="mt-2 rounded-md bg-slate-950 p-4 overflow-x-auto">
-              <pre>
-                <code className="text-white text-sm">
-                  {tailwindConfigString}
-                </code>
-              </pre>
-            </div>
-            <DialogFooter className="sm:justify-start">
-              <Button
-                onClick={() => {
-                  navigator.clipboard.writeText(tailwindConfigString);
-                  showSuccess("Config copied to clipboard!");
-                  setIsDialogOpen(false);
-                }}
-              >
-                <Copy className="mr-2 h-4 w-4" />
-                Copy to Clipboard
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+            <ColorBlindnessSimulator palettes={palettes} />
+
+            <GradientGenerator
+              palettes={palettes}
+              paletteNames={paletteNames}
+            />
+          </main>
+
+          <Footer />
+        </div>
+
+        <ExportDialog
+          palettes={palettes}
+          paletteNames={paletteNames}
+          open={isExportOpen}
+          onOpenChange={setIsExportOpen}
+        />
+
+        <SavedPalettesDrawer
+          open={isSavedOpen}
+          onOpenChange={setIsSavedOpen}
+          savedPalettes={savedPalettes}
+          onSave={savePalette}
+          onDelete={deletePalette}
+          onLoad={handleLoadPalette}
+          currentBaseColor={baseColor}
+          currentHarmony={harmony}
+        />
       </div>
-    </div>
+    </TooltipProvider>
   );
 };
 
