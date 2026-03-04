@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Copy } from "lucide-react";
 import { PaletteColor } from "@/lib/colors";
 import { exportFormats, ExportFormat } from "@/lib/export-formats";
@@ -41,13 +42,16 @@ export function ExportDialog({
           value={activeFormat}
           onValueChange={(v) => setActiveFormat(v as ExportFormat)}
         >
-          <TabsList className="grid grid-cols-6 w-full">
-            {exportFormats.map((fmt) => (
-              <TabsTrigger key={fmt.id} value={fmt.id} className="text-xs">
-                {fmt.name}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          <ScrollArea className="w-full">
+            <TabsList className="inline-flex w-auto min-w-full">
+              {exportFormats.map((fmt) => (
+                <TabsTrigger key={fmt.id} value={fmt.id} className="text-xs whitespace-nowrap">
+                  {fmt.name}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
           {exportFormats.map((fmt) => (
             <TabsContent key={fmt.id} value={fmt.id}>
               <div className="relative rounded-md bg-slate-950 p-4 overflow-auto max-h-[400px]">

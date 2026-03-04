@@ -1,7 +1,17 @@
 import { PaletteColor } from "@/lib/colors";
 import chroma from "chroma-js";
 
-export type ExportFormat = "tailwind" | "css" | "scss" | "json" | "swift" | "android";
+export type ExportFormat =
+  | "tailwind"
+  | "css"
+  | "scss"
+  | "less"
+  | "json"
+  | "figma"
+  | "cssInJs"
+  | "swift"
+  | "kotlin"
+  | "android";
 
 export interface ExportFormatConfig {
   id: ExportFormat;
@@ -51,6 +61,33 @@ export const exportFormats: ExportFormatConfig[] = [
     },
   },
   {
+    id: "less",
+    name: "Less",
+    generate: (palettes, names) => {
+      return palettes
+        .map((palette, index) => {
+          const name = names[index] || `color${index + 1}`;
+          return palette.map((c) => `@${name}-${c.name}: ${c.hex};`).join("\n");
+        })
+        .join("\n\n");
+    },
+  },
+  {
+    id: "cssInJs",
+    name: "CSS-in-JS",
+    generate: (palettes, names) => {
+      const obj: Record<string, Record<string, string>> = {};
+      palettes.forEach((palette, index) => {
+        const name = names[index] || `color${index + 1}`;
+        obj[name] = {};
+        palette.forEach((c) => {
+          obj[name][c.name] = c.hex;
+        });
+      });
+      return `export const colors = ${JSON.stringify(obj, null, 2)} as const;`;
+    },
+  },
+  {
     id: "json",
     name: "JSON",
     generate: (palettes, names) => {
@@ -66,22 +103,55 @@ export const exportFormats: ExportFormatConfig[] = [
     },
   },
   {
+    id: "figma",
+    name: "Figma",
+    generate: (palettes, names) => {
+      const tokens: Record<string, Record<string, { value: string; type: string }>> = {};
+      palettes.forEach((palette, index) => {
+        const name = names[index] || `color${index + 1}`;
+        tokens[name] = {};
+        palette.forEach((c) => {
+          tokens[name][String(c.name)] = { value: c.hex, type: "color" };
+        });
+      });
+      return JSON.stringify(tokens, null, 2);
+    },
+  },
+  {
     id: "swift",
     name: "Swift",
     generate: (palettes, names) => {
       const extensions = palettes
         .map((palette, index) => {
           const name = names[index] || `color${index + 1}`;
-          const colors = palette
+          return palette
             .map((c) => {
               const [r, g, b] = chroma(c.hex).gl();
               return `    static let ${name}${c.name} = UIColor(red: ${r.toFixed(3)}, green: ${g.toFixed(3)}, blue: ${b.toFixed(3)}, alpha: 1.0)`;
             })
             .join("\n");
-          return colors;
         })
         .join("\n\n");
       return `import UIKit\n\nextension UIColor {\n${extensions}\n}`;
+    },
+  },
+  {
+    id: "kotlin",
+    name: "Kotlin",
+    generate: (palettes, names) => {
+      const colors = palettes
+        .map((palette, index) => {
+          const name = names[index] || `color${index + 1}`;
+          const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+          return palette
+            .map((c) => {
+              const hex = c.hex.replace("#", "");
+              return `    val ${capitalize(name)}${c.name} = Color(0xFF${hex.toUpperCase()})`;
+            })
+            .join("\n");
+        })
+        .join("\n\n");
+      return `import androidx.compose.ui.graphics.Color\n\nobject AppColors {\n${colors}\n}`;
     },
   },
   {

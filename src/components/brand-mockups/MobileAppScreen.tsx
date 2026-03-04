@@ -22,15 +22,12 @@ export function MobileAppScreen({
   ];
 
   return (
-    <div className="w-full max-w-[280px] mx-auto">
-      {/* Phone frame */}
-      <div className="rounded-[2rem] border-4 border-gray-800 bg-white overflow-hidden shadow-xl">
-        {/* Notch */}
-        <div className="bg-gray-800 flex justify-center py-1">
-          <div className="h-4 w-24 rounded-b-xl bg-gray-800" />
+    <div className="w-full max-w-[280px] mx-auto transition-transform hover:-translate-y-1">
+      <div className="rounded-[2rem] border-4 border-gray-800 dark:border-gray-600 bg-card overflow-hidden shadow-xl">
+        <div className="bg-gray-800 dark:bg-gray-700 flex justify-center py-1">
+          <div className="h-4 w-24 rounded-b-xl bg-gray-800 dark:bg-gray-700" />
         </div>
 
-        {/* Status bar */}
         <div
           className="px-5 py-2 flex justify-between items-center text-[9px] font-medium"
           style={{ backgroundColor: primaryColor, color: primaryText }}
@@ -41,7 +38,6 @@ export function MobileAppScreen({
           </div>
         </div>
 
-        {/* Nav header */}
         <div
           className="px-5 py-4"
           style={{ backgroundColor: primaryColor, color: primaryText }}
@@ -50,15 +46,14 @@ export function MobileAppScreen({
           <div className="text-[10px] opacity-70">4 active projects</div>
         </div>
 
-        {/* List items */}
-        <div className="divide-y">
+        <div className="divide-y divide-border">
           {listItems.map((item, i) => (
             <div
               key={i}
-              className="px-5 py-3 flex items-center gap-3 hover:bg-gray-50"
+              className="px-5 py-3 flex items-center gap-3 hover:bg-muted/50 transition-colors cursor-pointer"
             >
               <div
-                className="h-8 w-8 rounded-lg flex items-center justify-center text-white text-xs font-bold"
+                className="h-8 w-8 rounded-lg flex items-center justify-center text-xs font-bold"
                 style={{
                   backgroundColor: chroma(item.color).alpha(0.15).css(),
                   color: item.color,
@@ -67,10 +62,10 @@ export function MobileAppScreen({
                 {item.label[0]}
               </div>
               <div className="flex-1">
-                <div className="text-sm font-medium text-gray-900">
+                <div className="text-sm font-medium text-foreground">
                   {item.label}
                 </div>
-                <div className="text-[10px] text-gray-400">Last edited 2h ago</div>
+                <div className="text-[10px] text-muted-foreground">Last edited 2h ago</div>
               </div>
               {item.badge && (
                 <span
@@ -87,20 +82,18 @@ export function MobileAppScreen({
           ))}
         </div>
 
-        {/* FAB */}
         <div className="relative h-16">
           <div
-            className="absolute bottom-3 right-5 h-12 w-12 rounded-full flex items-center justify-center shadow-lg text-xl font-light"
+            className="absolute bottom-3 right-5 h-12 w-12 rounded-full flex items-center justify-center shadow-lg text-xl font-light transition-transform hover:scale-110 cursor-pointer"
             style={{ backgroundColor: accentColor, color: fabText }}
           >
             +
           </div>
         </div>
 
-        {/* Bottom nav */}
-        <div className="border-t px-6 py-3 flex justify-around">
+        <div className="border-t border-border px-6 py-3 flex justify-around">
           {["Home", "Search", "Profile"].map((item, i) => (
-            <div key={item} className="text-center">
+            <div key={item} className="text-center cursor-pointer group">
               <div
                 className="h-1.5 w-1.5 rounded-full mx-auto mb-1"
                 style={{
@@ -108,9 +101,9 @@ export function MobileAppScreen({
                 }}
               />
               <span
-                className="text-[9px] font-medium"
+                className="text-[9px] font-medium transition-colors"
                 style={{
-                  color: i === 0 ? primaryColor : "#9CA3AF",
+                  color: i === 0 ? primaryColor : undefined,
                 }}
               >
                 {item}
