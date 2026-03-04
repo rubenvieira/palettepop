@@ -21,7 +21,7 @@ import {
   Command,
   AlertCircle,
 } from "lucide-react";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/components/ThemeProvider";
 import chroma from "chroma-js";
 
 interface HeaderProps {
@@ -53,7 +53,7 @@ export function Header({
   canUndo,
   canRedo,
 }: HeaderProps) {
-  const { setTheme, theme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
   const [invalidInputs, setInvalidInputs] = useState<Record<number, boolean>>({});
 
   const gradientCSS =
@@ -135,7 +135,7 @@ export function Header({
             variant="ghost"
             size="icon"
             className="h-8 w-8"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            onClick={toggleTheme}
             title="Toggle theme (Ctrl+D)"
           >
             {theme === "dark" ? (
