@@ -24,7 +24,7 @@ export function usePalette() {
   const [harmonyColors, setHarmonyColors] = useState<string[]>([]);
   const [palettes, setPalettes] = useState<PaletteColor[][]>([]);
   const [paletteNames, setPaletteNames] = useState<string[]>(
-    urlState?.names || ["primary", "secondary", "accent"]
+    urlState?.names || ["primary", "secondary", "accent", "highlight"]
   );
 
   // Undo/redo history

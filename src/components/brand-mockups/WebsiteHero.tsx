@@ -4,16 +4,24 @@ interface WebsiteHeroProps {
   primaryColor: string;
   secondaryColor: string;
   accentColor: string;
+  bgColor?: string;
+  textColor?: string;
+  subtleColor?: string;
 }
 
 export function WebsiteHero({
   primaryColor,
   secondaryColor,
   accentColor,
+  bgColor,
+  textColor,
+  subtleColor,
 }: WebsiteHeroProps) {
-  const darkBg = chroma(primaryColor).darken(3).desaturate(1).hex();
-  const darkText = chroma.contrast(darkBg, "white") > 4.5 ? "white" : "black";
+  const darkBg = textColor || chroma(primaryColor).darken(3).desaturate(1).hex();
+  const heroBg = bgColor ? chroma(bgColor).darken(4).hex() : chroma(primaryColor).darken(3).desaturate(1).hex();
+  const darkText = chroma.contrast(heroBg, "white") > 4.5 ? "white" : "black";
   const btnText = chroma.contrast(primaryColor, "white") > 4.5 ? "white" : "black";
+  const featureBg = subtleColor || primaryColor;
 
   return (
     <div className="w-full max-w-[420px] mx-auto rounded-xl overflow-hidden shadow-lg border bg-card transition-transform hover:-translate-y-1 hover:shadow-xl">
@@ -32,7 +40,7 @@ export function WebsiteHero({
 
       <div
         className="px-6 py-3 flex items-center justify-between"
-        style={{ backgroundColor: darkBg, color: darkText }}
+        style={{ backgroundColor: heroBg, color: darkText }}
       >
         <div className="font-bold text-sm">YourBrand</div>
         <div className="flex gap-4 text-[10px] opacity-70">
@@ -44,7 +52,7 @@ export function WebsiteHero({
 
       <div
         className="px-8 py-12 text-center relative overflow-hidden"
-        style={{ backgroundColor: darkBg, color: darkText }}
+        style={{ backgroundColor: heroBg, color: darkText }}
       >
         <div
           className="absolute -top-8 -right-8 h-32 w-32 rounded-full opacity-20 blur-2xl"
@@ -86,10 +94,10 @@ export function WebsiteHero({
         </div>
       </div>
 
-      <div className="px-6 py-4 flex gap-2 justify-center flex-wrap bg-card">
+      <div className="px-6 py-4 flex gap-2 justify-center flex-wrap" style={{ backgroundColor: bgColor || undefined }}>
         {["Fast", "Secure", "Scalable"].map((feature, i) => {
           const colors = [primaryColor, secondaryColor, accentColor];
-          const bg = chroma(colors[i]).alpha(0.1).css();
+          const bg = chroma(featureBg).alpha(0.15).css();
           return (
             <span
               key={feature}

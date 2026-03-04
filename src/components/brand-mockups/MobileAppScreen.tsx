@@ -4,12 +4,18 @@ interface MobileAppScreenProps {
   primaryColor: string;
   secondaryColor: string;
   accentColor: string;
+  bgColor?: string;
+  textColor?: string;
+  subtleColor?: string;
 }
 
 export function MobileAppScreen({
   primaryColor,
   secondaryColor,
   accentColor,
+  bgColor,
+  textColor,
+  subtleColor,
 }: MobileAppScreenProps) {
   const primaryText = chroma.contrast(primaryColor, "white") > 4.5 ? "white" : "black";
   const fabText = chroma.contrast(accentColor, "white") > 4.5 ? "white" : "black";

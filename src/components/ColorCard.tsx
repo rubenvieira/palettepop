@@ -6,14 +6,15 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, Info } from "lucide-react";
 
 interface ColorCardProps {
   name: string | number;
   hex: string;
+  onInspect?: (hex: string) => void;
 }
 
-export const ColorCard = memo(({ name, hex }: ColorCardProps) => {
+export const ColorCard = memo(({ name, hex, onInspect }: ColorCardProps) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = useCallback(
@@ -85,6 +86,19 @@ export const ColorCard = memo(({ name, hex }: ColorCardProps) => {
               <Copy className="h-4 w-4" style={{ color: textColor }} />
             )}
           </div>
+          {onInspect && (
+            <button
+              className="absolute top-1.5 right-1.5 p-1 rounded opacity-0 group-hover:opacity-70 hover:!opacity-100 transition-opacity"
+              style={{ color: textColor }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onInspect(hex);
+              }}
+              title="Inspect color"
+            >
+              <Info className="h-3.5 w-3.5" />
+            </button>
+          )}
         </div>
       </TooltipTrigger>
       <TooltipContent side="bottom" className="space-y-1 font-mono text-xs">

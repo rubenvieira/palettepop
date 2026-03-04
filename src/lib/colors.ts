@@ -62,7 +62,7 @@ export const generatePalette = (baseColor: string): PaletteColor[] => {
   }
 };
 
-export type HarmonyType = "single" | "analogous" | "triadic" | "complementary" | "split-complementary";
+export type HarmonyType = "single" | "analogous" | "triadic" | "complementary" | "split-complementary" | "tetradic" | "monochromatic";
 
 export const harmonySchemes: { name: string; value: HarmonyType }[] = [
   { name: "Single Color", value: "single" },
@@ -70,6 +70,8 @@ export const harmonySchemes: { name: string; value: HarmonyType }[] = [
   { name: "Triadic", value: "triadic" },
   { name: "Complementary", value: "complementary" },
   { name: "Split Complementary", value: "split-complementary" },
+  { name: "Tetradic", value: "tetradic" },
+  { name: "Monochromatic", value: "monochromatic" },
 ];
 
 export const generateHarmonies = (baseColor: string, harmony: HarmonyType): string[] => {
@@ -100,6 +102,16 @@ export const generateHarmonies = (baseColor: string, harmony: HarmonyType): stri
             randColor.set("hsl.h", "-150").hex(),
           ];
         }
+        case "tetradic": {
+          const rc = generateVibrantColor();
+          return [base.hex(), rc.hex(), rc.set("hsl.h", "+90").hex(), rc.set("hsl.h", "+180").hex()];
+        }
+        case "monochromatic":
+          return [
+            base.hex(),
+            base.brighten(1).hex(),
+            base.brighten(2).hex(),
+          ];
         default:
           return [base.hex()];
       }
@@ -127,6 +139,19 @@ export const generateHarmonies = (baseColor: string, harmony: HarmonyType): stri
           base.hex(),
           base.set("hsl.h", "+150").hex(),
           base.set("hsl.h", "-150").hex(),
+        ];
+      case "tetradic":
+        return [
+          base.hex(),
+          base.set("hsl.h", "+90").hex(),
+          base.set("hsl.h", "+180").hex(),
+          base.set("hsl.h", "+270").hex(),
+        ];
+      case "monochromatic":
+        return [
+          base.hex(),
+          base.set("hsl.s", base.get("hsl.s") * 0.6).brighten(0.8).hex(),
+          base.set("hsl.s", base.get("hsl.s") * 0.3).brighten(1.5).hex(),
         ];
       default:
         return [base.hex()];

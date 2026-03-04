@@ -9,9 +9,10 @@ interface PaletteProps {
   title: string;
   colors: PaletteColor[];
   onRename?: (name: string) => void;
+  onInspectColor?: (hex: string) => void;
 }
 
-export const Palette = memo(({ title, colors, onRename }: PaletteProps) => {
+export const Palette = memo(({ title, colors, onRename, onInspectColor }: PaletteProps) => {
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState(title);
 
@@ -72,7 +73,7 @@ export const Palette = memo(({ title, colors, onRename }: PaletteProps) => {
             style={{ animationDelay: `${index * 30}ms` }}
             className="animate-scale-in"
           >
-            <ColorCard name={color.name} hex={color.hex} />
+            <ColorCard name={color.name} hex={color.hex} onInspect={onInspectColor} />
           </div>
         ))}
       </div>

@@ -9,6 +9,10 @@ interface BrandMockupsProps {
   palettes: PaletteColor[][];
 }
 
+function getShade(palette: PaletteColor[], shade: number, fallback: string): string {
+  return palette.find((c) => c.name === shade)?.hex || fallback;
+}
+
 export function BrandMockups({ palettes }: BrandMockupsProps) {
   if (palettes.length === 0) return null;
 
@@ -16,9 +20,19 @@ export function BrandMockups({ palettes }: BrandMockupsProps) {
   const secondary = palettes[1] || primary;
   const accent = palettes[2] || secondary;
 
-  const p500 = primary.find((c) => c.name === 500)?.hex || "#000000";
-  const s500 = secondary.find((c) => c.name === 500)?.hex || "#000000";
-  const a500 = accent.find((c) => c.name === 500)?.hex || "#000000";
+  const shades = {
+    p50: getShade(primary, 50, "#f8f8f8"),
+    p200: getShade(primary, 200, "#e0e0e0"),
+    p500: getShade(primary, 500, "#000000"),
+    p700: getShade(primary, 700, "#333333"),
+    p900: getShade(primary, 900, "#111111"),
+    s50: getShade(secondary, 50, "#f8f8f8"),
+    s200: getShade(secondary, 200, "#e0e0e0"),
+    s500: getShade(secondary, 500, "#000000"),
+    a50: getShade(accent, 50, "#f8f8f8"),
+    a200: getShade(accent, 200, "#e0e0e0"),
+    a500: getShade(accent, 500, "#000000"),
+  };
 
   return (
     <div className="mt-16 animate-fade-in-up">
@@ -38,19 +52,27 @@ export function BrandMockups({ palettes }: BrandMockupsProps) {
         <TabsContent value="brand">
           <div className="grid md:grid-cols-3 gap-8 items-start">
             <SocialMediaPost
-              primaryColor={p500}
-              secondaryColor={s500}
-              accentColor={a500}
+              primaryColor={shades.p500}
+              secondaryColor={shades.s500}
+              accentColor={shades.a500}
+              bgColor={shades.p50}
+              subtleColor={shades.a200}
             />
             <WebsiteHero
-              primaryColor={p500}
-              secondaryColor={s500}
-              accentColor={a500}
+              primaryColor={shades.p500}
+              secondaryColor={shades.s500}
+              accentColor={shades.a500}
+              bgColor={shades.p50}
+              textColor={shades.p900}
+              subtleColor={shades.p200}
             />
             <MobileAppScreen
-              primaryColor={p500}
-              secondaryColor={s500}
-              accentColor={a500}
+              primaryColor={shades.p500}
+              secondaryColor={shades.s500}
+              accentColor={shades.a500}
+              bgColor={shades.p50}
+              textColor={shades.p900}
+              subtleColor={shades.s200}
             />
           </div>
         </TabsContent>
