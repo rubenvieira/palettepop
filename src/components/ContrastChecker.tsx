@@ -20,9 +20,11 @@ export function ContrastChecker({ palettes, paletteNames }: ContrastCheckerProps
 
   const allResults = useMemo(
     () =>
-      palettes.flatMap((palette, i) =>
-        generateContrastPairs(palette, paletteNames[i] || `color${i + 1}`)
-      ),
+      palettes.length === 0
+        ? []
+        : palettes.flatMap((palette, i) =>
+            generateContrastPairs(palette, paletteNames[i] || `color${i + 1}`)
+          ),
     [palettes, paletteNames]
   );
 

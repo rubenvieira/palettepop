@@ -14,11 +14,10 @@ export function ColorBlindnessSimulator({
 }: ColorBlindnessSimulatorProps) {
   const [compareMode, setCompareMode] = useState(false);
 
-  if (palettes.length === 0) return null;
-
-  const primaryPalette = palettes[0];
+  const primaryPalette = palettes[0] ?? [];
 
   const scores = useMemo(() => {
+    if (primaryPalette.length === 0) return [];
     return cvdTypes.map(({ type }) => {
       const simulated = simulatePalette(primaryPalette, type);
       const keyShades = [50, 200, 500, 700, 950];
@@ -33,6 +32,8 @@ export function ColorBlindnessSimulator({
       return { type, score: Math.round(minDist) };
     });
   }, [primaryPalette]);
+
+  if (palettes.length === 0) return null;
 
   return (
     <div className="mt-16 animate-fade-in-up">
