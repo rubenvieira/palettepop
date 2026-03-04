@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,7 +9,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { harmonySchemes, HarmonyType } from "@/lib/colors";
-import { Share2, Bookmark, Download, Shuffle } from "lucide-react";
+import {
+  Share2,
+  Bookmark,
+  Download,
+  Shuffle,
+  Undo2,
+  Redo2,
+  Sun,
+  Moon,
+  Command,
+  AlertCircle,
+} from "lucide-react";
+import { useTheme } from "next-themes";
 import chroma from "chroma-js";
 
 interface HeaderProps {
@@ -20,6 +33,10 @@ interface HeaderProps {
   onExport: () => void;
   onShare: () => void;
   onSavedPalettes: () => void;
+  onUndo: () => void;
+  onRedo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
 }
 
 export function Header({
@@ -31,11 +48,26 @@ export function Header({
   onExport,
   onShare,
   onSavedPalettes,
+  onUndo,
+  onRedo,
+  canUndo,
+  canRedo,
 }: HeaderProps) {
+  const { setTheme, theme } = useTheme();
+  const [invalidInputs, setInvalidInputs] = useState<Record<number, boolean>>({});
+
   const gradientCSS =
     harmonyColors.length > 1
       ? `linear-gradient(90deg, ${harmonyColors.filter((c) => chroma.valid(c)).join(", ")})`
       : harmonyColors[0] || "#19CE41";
+
+  const handleColorInput = (value: string, index: number) => {
+    onColorChange(value, index);
+    setInvalidInputs((prev) => ({
+      ...prev,
+      [index]: value.length > 0 && !chroma.valid(value),
+    }));
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b">
@@ -58,21 +90,72 @@ export function Header({
                 Pop
               </span>
             </h1>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground hidden sm:block">
               Design systems start with great color
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={onShare}>
-            <Share2 className="h-4 w-4 mr-1" /> Share
+        <div className="flex items-center gap-1.5 flex-wrap justify-center">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={onUndo}
+            disabled={!canUndo}
+            title="Undo (Ctrl+Z)"
+          >
+            <Undo2 className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="sm" onClick={onSavedPalettes}>
-            <Bookmark className="h-4 w-4 mr-1" /> Saved
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={onRedo}
+            disabled={!canRedo}
+            title="Redo (Ctrl+Y)"
+          >
+            <Redo2 className="h-4 w-4" />
           </Button>
-          <Button size="sm" onClick={onExport}>
-            <Download className="h-4 w-4 mr-1" /> Export
+          <div className="w-px h-5 bg-border mx-1 hidden sm:block" />
+          <Button variant="ghost" size="sm" onClick={onShare} title="Share (Ctrl+L)">
+            <Share2 className="h-4 w-4 sm:mr-1" />
+            <span className="hidden sm:inline">Share</span>
+          </Button>
+          <Button variant="ghost" size="sm" onClick={onSavedPalettes} title="Saved (Ctrl+S)">
+            <Bookmark className="h-4 w-4 sm:mr-1" />
+            <span className="hidden sm:inline">Saved</span>
+          </Button>
+          <Button variant="default" size="sm" onClick={onExport} title="Export (Ctrl+E)">
+            <Download className="h-4 w-4 sm:mr-1" />
+            <span className="hidden sm:inline">Export</span>
+          </Button>
+          <div className="w-px h-5 bg-border mx-1 hidden sm:block" />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            title="Toggle theme (Ctrl+D)"
+          >
+            {theme === "dark" ? (
+              <Sun className="h-4 w-4" />
+            ) : (
+              <Moon className="h-4 w-4" />
+            )}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => {
+              window.dispatchEvent(
+                new KeyboardEvent("keydown", { key: "k", ctrlKey: true })
+              );
+            }}
+            title="Command palette (Ctrl+K)"
+          >
+            <Command className="h-4 w-4" />
           </Button>
         </div>
       </div>
@@ -84,8 +167,12 @@ export function Header({
               <Input
                 type="text"
                 value={color}
-                onChange={(e) => onColorChange(e.target.value, index)}
-                className="pl-12 text-base h-10 w-40"
+                onChange={(e) => handleColorInput(e.target.value, index)}
+                className={`pl-12 text-base h-10 w-40 ${
+                  invalidInputs[index]
+                    ? "border-destructive ring-1 ring-destructive/30"
+                    : ""
+                }`}
                 aria-label={`Harmony Color ${index + 1}`}
               />
               <div
@@ -97,10 +184,13 @@ export function Header({
               <Input
                 type="color"
                 value={chroma.valid(color) ? color : "#000000"}
-                onInput={(e) => onColorChange(e.currentTarget.value, index)}
+                onInput={(e) => handleColorInput(e.currentTarget.value, index)}
                 className="absolute left-3 top-1/2 -translate-y-1/2 h-6 w-6 opacity-0 cursor-pointer"
                 aria-label={`Pick Color for Harmony Color ${index + 1}`}
               />
+              {invalidInputs[index] && (
+                <AlertCircle className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-destructive" />
+              )}
             </div>
           ))}
           <Button onClick={onRandomize} variant="outline" size="sm">

@@ -1,6 +1,9 @@
+import { useState, useMemo } from "react";
 import { PaletteColor } from "@/lib/colors";
 import { cvdTypes, simulatePalette } from "@/lib/color-blindness";
-import { Eye } from "lucide-react";
+import { Eye, EyeOff, ArrowLeftRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import chroma from "chroma-js";
 
 interface ColorBlindnessSimulatorProps {
   palettes: PaletteColor[][];
@@ -9,25 +12,56 @@ interface ColorBlindnessSimulatorProps {
 export function ColorBlindnessSimulator({
   palettes,
 }: ColorBlindnessSimulatorProps) {
+  const [compareMode, setCompareMode] = useState(false);
+
   if (palettes.length === 0) return null;
 
   const primaryPalette = palettes[0];
+
+  const scores = useMemo(() => {
+    return cvdTypes.map(({ type }) => {
+      const simulated = simulatePalette(primaryPalette, type);
+      const keyShades = [50, 200, 500, 700, 950];
+      const keyColors = simulated.filter((c) => keyShades.includes(c.name as number));
+      let minDist = Infinity;
+      for (let i = 0; i < keyColors.length; i++) {
+        for (let j = i + 1; j < keyColors.length; j++) {
+          const dist = chroma.deltaE(keyColors[i].hex, keyColors[j].hex);
+          if (dist < minDist) minDist = dist;
+        }
+      }
+      return { type, score: Math.round(minDist) };
+    });
+  }, [primaryPalette]);
 
   return (
     <div className="mt-16 animate-fade-in-up">
       <h2 className="text-3xl font-bold mb-2 text-center tracking-tight">
         Color Vision
       </h2>
-      <p className="text-center text-muted-foreground mb-8">
+      <p className="text-center text-muted-foreground mb-4">
         How your palette appears under different color vision deficiencies
       </p>
+
+      <div className="flex items-center justify-center gap-2 mb-8">
+        <Button
+          variant={compareMode ? "default" : "outline"}
+          size="sm"
+          onClick={() => setCompareMode(!compareMode)}
+          className="text-xs"
+        >
+          <ArrowLeftRight className="h-3.5 w-3.5 mr-1" />
+          {compareMode ? "Side-by-side on" : "Compare"}
+        </Button>
+      </div>
+
       <div className="space-y-4 max-w-3xl mx-auto">
         <div className="flex items-center gap-3">
-          <div className="w-32 flex items-center gap-2 text-sm font-medium shrink-0">
+          <div className="w-36 flex items-center gap-2 text-sm font-medium shrink-0">
             <Eye className="h-4 w-4" />
             Normal
           </div>
-          <div className="flex flex-1 h-8 rounded-lg overflow-hidden">
+          <div className="flex flex-1 h-10 rounded-lg overflow-hidden">
             {primaryPalette.map((c) => (
               <div
                 key={c.name}
@@ -40,22 +74,51 @@ export function ColorBlindnessSimulator({
 
         {cvdTypes.map(({ type, name, description }) => {
           const simulated = simulatePalette(primaryPalette, type);
+          const scoreData = scores.find((s) => s.type === type);
+          const score = scoreData?.score ?? 0;
+          const scoreLabel = score > 20 ? "Good" : score > 10 ? "Fair" : "Poor";
+          const scoreColor =
+            score > 20
+              ? "text-green-600 dark:text-green-400"
+              : score > 10
+                ? "text-yellow-600 dark:text-yellow-400"
+                : "text-red-600 dark:text-red-400";
+
           return (
-            <div key={type} className="flex items-center gap-3">
-              <div className="w-32 shrink-0">
-                <div className="text-sm font-medium">{name}</div>
-                <div className="text-[10px] text-muted-foreground">
-                  {description}
+            <div key={type}>
+              <div className="flex items-center gap-3">
+                <div className="w-36 shrink-0">
+                  <div className="flex items-center gap-2">
+                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                    <div className="text-sm font-medium">{name}</div>
+                  </div>
+                  <div className="ml-6">
+                    <span className="text-[10px] text-muted-foreground">
+                      {description}
+                    </span>
+                  </div>
+                  <div className={`text-[10px] font-medium ml-6 ${scoreColor}`}>
+                    Distinguishability: {scoreLabel}
+                  </div>
                 </div>
-              </div>
-              <div className="flex flex-1 h-8 rounded-lg overflow-hidden">
-                {simulated.map((c) => (
-                  <div
-                    key={c.name}
-                    className="flex-1 transition-colors duration-300"
-                    style={{ backgroundColor: c.hex }}
-                  />
-                ))}
+                <div className="flex flex-1 h-10 rounded-lg overflow-hidden">
+                  {compareMode ? (
+                    primaryPalette.map((c, i) => (
+                      <div key={c.name} className="flex-1 flex flex-col">
+                        <div className="flex-1" style={{ backgroundColor: c.hex }} />
+                        <div className="flex-1" style={{ backgroundColor: simulated[i].hex }} />
+                      </div>
+                    ))
+                  ) : (
+                    simulated.map((c) => (
+                      <div
+                        key={c.name}
+                        className="flex-1 transition-colors duration-300"
+                        style={{ backgroundColor: c.hex }}
+                      />
+                    ))
+                  )}
+                </div>
               </div>
             </div>
           );

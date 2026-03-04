@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Palette } from "@/components/Palette";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -8,6 +8,7 @@ import { ContrastChecker } from "@/components/ContrastChecker";
 import { ColorBlindnessSimulator } from "@/components/ColorBlindnessSimulator";
 import { GradientGenerator } from "@/components/GradientGenerator";
 import { BrandMockups } from "@/components/brand-mockups/BrandMockups";
+import { CommandPalette } from "@/components/CommandPalette";
 import { usePalette } from "@/hooks/use-palette";
 import { useSavedPalettes } from "@/hooks/use-saved-palettes";
 import { encodePaletteToURL } from "@/lib/url-state";
@@ -23,18 +24,36 @@ const Index = () => {
     harmonyColors,
     palettes,
     paletteNames,
+    renamePalette,
     handleHarmonyColorChange,
     handleRandomColor,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
   } = usePalette();
 
-  const { savedPalettes, savePalette, deletePalette } = useSavedPalettes();
+  const {
+    savedPalettes,
+    savePalette,
+    deletePalette,
+    toggleFavorite,
+    exportAll,
+    importPalettes,
+    searchQuery,
+    setSearchQuery,
+  } = useSavedPalettes();
 
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isSavedOpen, setIsSavedOpen] = useState(false);
 
   useEffect(() => {
     const handleSpacebar = (e: KeyboardEvent) => {
-      if (e.code === "Space" && document.activeElement?.tagName !== "INPUT") {
+      if (
+        e.code === "Space" &&
+        document.activeElement?.tagName !== "INPUT" &&
+        document.activeElement?.tagName !== "TEXTAREA"
+      ) {
         e.preventDefault();
         handleRandomColor();
       }
@@ -43,30 +62,40 @@ const Index = () => {
     return () => window.removeEventListener("keydown", handleSpacebar);
   }, [handleRandomColor]);
 
-  const handleShare = () => {
-    const url = encodePaletteToURL(baseColor, harmony);
+  const handleShare = useCallback(() => {
+    const url = encodePaletteToURL(baseColor, harmony, paletteNames);
     navigator.clipboard.writeText(url);
     showSuccess("Share link copied to clipboard!");
     window.history.replaceState(null, "", url);
-  };
+  }, [baseColor, harmony, paletteNames]);
 
-  const handleLoadPalette = (color: string, h: typeof harmony) => {
-    setBaseColor(color);
-    setHarmony(h);
-  };
+  const handleLoadPalette = useCallback(
+    (color: string, h: typeof harmony) => {
+      setBaseColor(color);
+      setHarmony(h);
+    },
+    [setBaseColor, setHarmony]
+  );
+
+  const openExport = useCallback(() => setIsExportOpen(true), []);
+  const openSaved = useCallback(() => setIsSavedOpen(true), []);
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="bg-gray-50 dark:bg-gray-900 min-h-screen">
+      <div className="bg-background min-h-screen transition-colors">
         <Header
           harmonyColors={harmonyColors}
           harmony={harmony}
           onHarmonyChange={setHarmony}
           onColorChange={handleHarmonyColorChange}
           onRandomize={handleRandomColor}
-          onExport={() => setIsExportOpen(true)}
+          onExport={openExport}
           onShare={handleShare}
-          onSavedPalettes={() => setIsSavedOpen(true)}
+          onSavedPalettes={openSaved}
+          onUndo={undo}
+          onRedo={redo}
+          canUndo={canUndo}
+          canRedo={canRedo}
         />
 
         <div className="container mx-auto p-4 sm:p-8">
@@ -78,6 +107,7 @@ const Index = () => {
                     key={index}
                     title={paletteNames[index]}
                     colors={palette}
+                    onRename={(name) => renamePalette(index, name)}
                   />
                 ))}
               </div>
@@ -121,8 +151,24 @@ const Index = () => {
           onSave={savePalette}
           onDelete={deletePalette}
           onLoad={handleLoadPalette}
+          onToggleFavorite={toggleFavorite}
+          onExportAll={exportAll}
+          onImport={importPalettes}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
           currentBaseColor={baseColor}
           currentHarmony={harmony}
+        />
+
+        <CommandPalette
+          onRandomize={handleRandomColor}
+          onExport={openExport}
+          onShare={handleShare}
+          onSavedPalettes={openSaved}
+          onUndo={undo}
+          onRedo={redo}
+          canUndo={canUndo}
+          canRedo={canRedo}
         />
       </div>
     </TooltipProvider>
