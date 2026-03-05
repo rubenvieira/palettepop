@@ -1,8 +1,28 @@
 {
-  "name": "vite_react_shadcn_ts",
+  "name": "palettepop",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "A comprehensive color palette generator and analysis tool for designers and developers. Generate, analyze, and visualize color schemes that pop.",
   "type": "module",
+  "author": "Ruben Vieira",
+  "keywords": [
+    "color-palette",
+    "design-tools",
+    "react",
+    "typescript",
+    "tailwind-css",
+    "color-harmony",
+    "accessibility",
+    "frontend-development"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rubenvieira/palettepop.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rubenvieira/palettepop/issues"
+  },
+  "homepage": "https://rubenv.net/tools/palettepop",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
