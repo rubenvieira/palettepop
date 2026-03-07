@@ -5,6 +5,7 @@
   "description": "A comprehensive color palette generator and analysis tool for designers and developers. Generate, analyze, and visualize color schemes that pop.",
   "type": "module",
   "author": "Ruben Vieira",
+  "license": "MIT",
   "keywords": [
     "color-palette",
     "design-tools",
