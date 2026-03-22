@@ -1,40 +1,43 @@
 import { useEffect, useState, useCallback } from "react";
-import { Palette } from "@/components/Palette";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ExportDialog } from "@/components/ExportDialog";
 import { SavedPalettesDrawer } from "@/components/SavedPalettesDrawer";
-import { ContrastChecker } from "@/components/ContrastChecker";
-import { ColorBlindnessSimulator } from "@/components/ColorBlindnessSimulator";
-import { GradientGenerator } from "@/components/GradientGenerator";
-import { BrandMockups } from "@/components/brand-mockups/BrandMockups";
 import { CommandPalette } from "@/components/CommandPalette";
 import { ColorDetailPanel } from "@/components/ColorDetailPanel";
-import { ImageColorExtractor } from "@/components/ImageColorExtractor";
 import { KeyboardShortcutsDialog } from "@/components/KeyboardShortcutsDialog";
-import { usePalette } from "@/hooks/use-palette";
+import { ColorScaleEditor } from "@/components/generator/ColorScaleEditor";
+import { ComponentsPreview } from "@/components/preview/ComponentsPreview";
+import { ToolsPanel } from "@/components/tools/ToolsPanel";
+import { TailwindColorsPage } from "@/components/tailwind/TailwindColorsPage";
+import { useColorScales } from "@/hooks/use-color-scales";
 import { useSavedPalettes } from "@/hooks/use-saved-palettes";
 import { encodePaletteToURL } from "@/lib/url-state";
 import { showSuccess } from "@/utils/toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Paintbrush, Layout, Wrench, Palette } from "lucide-react";
 
 const Index = () => {
   const {
-    baseColor,
-    setBaseColor,
-    harmony,
-    setHarmony,
-    harmonyColors,
-    palettes,
-    paletteNames,
-    renamePalette,
-    handleHarmonyColorChange,
+    scales,
+    selectedScaleId,
+    setSelectedScaleId,
+    selectedScale,
+    addScale,
+    removeScale,
+    updateScaleBaseColor,
+    toggleShadeLock,
+    overrideShade,
+    renameScale,
     handleRandomColor,
     undo,
     redo,
     canUndo,
     canRedo,
-  } = usePalette();
+    palettes,
+    paletteNames,
+  } = useColorScales();
 
   const {
     savedPalettes,
@@ -52,6 +55,7 @@ const Index = () => {
   const [inspectHex, setInspectHex] = useState<string | null>(null);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
 
+  // Spacebar for random color
   useEffect(() => {
     const handleSpacebar = (e: KeyboardEvent) => {
       if (
@@ -68,34 +72,42 @@ const Index = () => {
   }, [handleRandomColor]);
 
   const handleShare = useCallback(() => {
-    const url = encodePaletteToURL(baseColor, harmony, paletteNames);
+    const baseColor = scales[0]?.baseColor || "#3b82f6";
+    const url = encodePaletteToURL(baseColor, "single", paletteNames);
     navigator.clipboard.writeText(url);
     showSuccess("Share link copied to clipboard!");
     window.history.replaceState(null, "", url);
-  }, [baseColor, harmony, paletteNames]);
+  }, [scales, paletteNames]);
 
   const handleLoadPalette = useCallback(
-    (color: string, h: typeof harmony) => {
-      setBaseColor(color);
-      setHarmony(h);
+    (color: string) => {
+      if (selectedScale) {
+        updateScaleBaseColor(selectedScale.id, color);
+      }
     },
-    [setBaseColor, setHarmony]
+    [selectedScale, updateScaleBaseColor]
   );
 
   const openExport = useCallback(() => setIsExportOpen(true), []);
   const openSaved = useCallback(() => setIsSavedOpen(true), []);
   const openShortcuts = useCallback(() => setIsShortcutsOpen(true), []);
-  const handleInspectColor = useCallback((hex: string) => setInspectHex(hex), []);
+
+  const handleColorSelectFromTool = useCallback(
+    (hex: string) => {
+      if (selectedScale) {
+        updateScaleBaseColor(selectedScale.id, hex);
+      }
+    },
+    [selectedScale, updateScaleBaseColor]
+  );
+
+  const accentColor = scales[0]?.shades.find((s) => s.name === 500)?.hex;
 
   return (
     <TooltipProvider delayDuration={200}>
       <div className="bg-background min-h-screen transition-colors">
         <Header
-          harmonyColors={harmonyColors}
-          harmony={harmony}
-          onHarmonyChange={setHarmony}
-          onColorChange={handleHarmonyColorChange}
-          onRandomize={handleRandomColor}
+          accentColor={accentColor}
           onExport={openExport}
           onShare={handleShare}
           onSavedPalettes={openSaved}
@@ -106,46 +118,60 @@ const Index = () => {
         />
 
         <div className="container mx-auto p-4 sm:p-8">
-          <main>
-            <ImageColorExtractor onColorSelect={setBaseColor} />
+          <Tabs defaultValue="generator" className="w-full">
+            <TabsList className="grid w-full max-w-lg mx-auto grid-cols-4 mb-8">
+              <TabsTrigger value="generator" className="gap-1.5">
+                <Paintbrush className="h-3.5 w-3.5 hidden sm:block" />
+                Generator
+              </TabsTrigger>
+              <TabsTrigger value="components" className="gap-1.5">
+                <Layout className="h-3.5 w-3.5 hidden sm:block" />
+                Components
+              </TabsTrigger>
+              <TabsTrigger value="tools" className="gap-1.5">
+                <Wrench className="h-3.5 w-3.5 hidden sm:block" />
+                Tools
+              </TabsTrigger>
+              <TabsTrigger value="tailwind" className="gap-1.5">
+                <Palette className="h-3.5 w-3.5 hidden sm:block" />
+                Tailwind
+              </TabsTrigger>
+            </TabsList>
 
-            {palettes.length > 0 ? (
-              <div className="space-y-12 mt-12">
-                {palettes.map((palette, index) => (
-                  <Palette
-                    key={index}
-                    title={paletteNames[index]}
-                    colors={palette}
-                    onRename={(name) => renamePalette(index, name)}
-                    onInspectColor={handleInspectColor}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-16">
-                <p className="text-muted-foreground">
-                  Enter a valid CSS color to get started.
-                </p>
-              </div>
-            )}
+            <TabsContent value="generator">
+              <ColorScaleEditor
+                scales={scales}
+                selectedScaleId={selectedScaleId}
+                selectedScale={selectedScale}
+                onSelectScale={setSelectedScaleId}
+                onAddScale={addScale}
+                onRemoveScale={removeScale}
+                onUpdateBaseColor={updateScaleBaseColor}
+                onToggleLock={toggleShadeLock}
+                onOverrideShade={overrideShade}
+                onRenameScale={renameScale}
+                onRandomColor={handleRandomColor}
+              />
+            </TabsContent>
 
-            <BrandMockups palettes={palettes} />
+            <TabsContent value="components">
+              <ComponentsPreview scales={scales} palettes={palettes} />
+            </TabsContent>
 
-            <ContrastChecker
-              palettes={palettes}
-              paletteNames={paletteNames}
-            />
+            <TabsContent value="tools">
+              <ToolsPanel
+                scales={scales}
+                palettes={palettes}
+                paletteNames={paletteNames}
+                onColorSelect={handleColorSelectFromTool}
+                onAddScale={addScale}
+              />
+            </TabsContent>
 
-            <ColorBlindnessSimulator
-              palettes={palettes}
-              paletteNames={paletteNames}
-            />
-
-            <GradientGenerator
-              palettes={palettes}
-              paletteNames={paletteNames}
-            />
-          </main>
+            <TabsContent value="tailwind">
+              <TailwindColorsPage onUseColor={handleColorSelectFromTool} />
+            </TabsContent>
+          </Tabs>
 
           <Footer />
         </div>
@@ -163,14 +189,14 @@ const Index = () => {
           savedPalettes={savedPalettes}
           onSave={savePalette}
           onDelete={deletePalette}
-          onLoad={handleLoadPalette}
+          onLoad={(color, _harmony) => handleLoadPalette(color)}
           onToggleFavorite={toggleFavorite}
           onExportAll={exportAll}
           onImport={importPalettes}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
-          currentBaseColor={baseColor}
-          currentHarmony={harmony}
+          currentBaseColor={scales[0]?.baseColor || "#3b82f6"}
+          currentHarmony="single"
         />
 
         <ColorDetailPanel

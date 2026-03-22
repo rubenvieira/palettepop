@@ -4,6 +4,7 @@ import chroma from "chroma-js";
 export type ExportFormat =
   | "tailwind"
   | "css"
+  | "oklch"
   | "scss"
   | "less"
   | "json"
@@ -43,6 +44,25 @@ export const exportFormats: ExportFormatConfig[] = [
         .map((palette, index) => {
           const name = names[index] || `color${index + 1}`;
           return palette.map((c) => `  --${name}-${c.name}: ${c.hex};`).join("\n");
+        })
+        .join("\n\n");
+      return `:root {\n${vars}\n}`;
+    },
+  },
+  {
+    id: "oklch",
+    name: "OKLCH",
+    generate: (palettes, names) => {
+      const vars = palettes
+        .map((palette, index) => {
+          const name = names[index] || `color${index + 1}`;
+          return palette.map((c) => {
+            const color = chroma(c.hex);
+            const l = (color.get("oklch.l") * 100).toFixed(1);
+            const ch = color.get("oklch.c").toFixed(3);
+            const h = (color.get("oklch.h") || 0).toFixed(1);
+            return `  --${name}-${c.name}: oklch(${l}% ${ch} ${h});`;
+          }).join("\n");
         })
         .join("\n\n");
       return `:root {\n${vars}\n}`;

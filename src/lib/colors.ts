@@ -5,6 +5,44 @@ export interface PaletteColor {
   hex: string;
 }
 
+export type ColorScaleRole = 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'neutral' | 'custom';
+
+export interface ColorScale {
+  id: string;
+  role: ColorScaleRole;
+  name: string;
+  baseColor: string;
+  shades: PaletteColor[];
+  lockedShades: number[]; // shade names (50, 100, etc.) that are locked
+  overrides: Record<number, string>; // shade name -> hex override
+}
+
+export const colorScaleRoleDefaults: Record<ColorScaleRole, { name: string; defaultColor: string }> = {
+  primary: { name: 'primary', defaultColor: '#3b82f6' },
+  secondary: { name: 'secondary', defaultColor: '#8b5cf6' },
+  success: { name: 'success', defaultColor: '#22c55e' },
+  warning: { name: 'warning', defaultColor: '#eab308' },
+  error: { name: 'error', defaultColor: '#ef4444' },
+  neutral: { name: 'neutral', defaultColor: '#737373' },
+  custom: { name: 'custom', defaultColor: '#06b6d4' },
+};
+
+export const generateScaleWithOverrides = (
+  baseColor: string,
+  lockedShades: number[] = [],
+  overrides: Record<number, string> = {}
+): PaletteColor[] => {
+  const palette = generatePalette(baseColor);
+  if (palette.length === 0) return [];
+
+  return palette.map((shade) => {
+    if (lockedShades.includes(shade.name) && overrides[shade.name]) {
+      return { ...shade, hex: overrides[shade.name] };
+    }
+    return shade;
+  });
+};
+
 export const generatePalette = (baseColor: string): PaletteColor[] => {
   try {
     if (!chroma.valid(baseColor)) return [];
